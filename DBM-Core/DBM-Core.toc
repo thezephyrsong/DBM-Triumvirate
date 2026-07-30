@@ -16,9 +16,9 @@
 ## SavedVariablesPerCharacter: DBM_UsedProfile, DBM_UseDualProfile, DBM_CharSavedRevision, DBM_SavedOptions
 ## LoadOnDemand: 0
 ## DefaultState: enabled
-## Author: Barsoom, Bunny67, Zidras, DBM-Frostmourne contributors, original DBM team
-## Version: 10.1.13_alpha
-## X-Website: https://github.com/5Buttons/DBM-CC
+## Author: bonkywonky, Barsoom, Bunny67, Zidras, DBM-Frostmourne contributors, original DBM team
+## Version: 10.2.1_alpha
+## X-Website: https://github.com/thezephyrsong/DBM-Triumvirate
 
 compat.lua
 
