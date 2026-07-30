@@ -1,15 +1,16 @@
 local mod	= DBM:NewMod("Sulfuron", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20220518110528")
+mod:SetRevision("20260728220000")
 mod:SetCreatureID(12098)--, 11662
 
 mod:SetModelID(13030)
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_AURA_APPLIED 19779 19780 19776 20294",
-	"SPELL_CAST_START 19775"
+	"SPELL_AURA_APPLIED 19779 19780 19776 20294 500296",
+	"SPELL_CAST_START 19775",
+	"SPELL_CAST_SUCCESS 500295"
 )
 
 --TODO, nameplate aura if classic API supports it enough
@@ -17,11 +18,20 @@ local warnInspire		= mod:NewTargetNoFilterAnnounce(19779, 2, nil, "Tank|Healer",
 local warnHandRagnaros	= mod:NewTargetAnnounce(19780, 2, nil, false, 2)
 local warnShadowPain	= mod:NewTargetAnnounce(19776, 2, nil, false, 2)
 local warnImmolate		= mod:NewTargetAnnounce(20294, 2, nil, false, 2)
+local warnShadowForm	= mod:NewSpellAnnounce(500296, 2)
+local warnPhase2		= mod:NewPhaseAnnounce(2)
+local warnShadowNova	= mod:NewSpellAnnounce(500295, 2)
 
 local specWarnHeal		= mod:NewSpecialWarningInterrupt(19775, "HasInterrupt", nil, nil, 1, 2)
 
 local timerInspire		= mod:NewTargetTimer(10, 19779, nil, "Tank|Healer", 2, 5, nil, DBM_COMMON_L.TANK_ICON..DBM_COMMON_L.HEALER_ICON)
 local timerHeal			= mod:NewCastTimer(2, 19775, nil, nil, 2, 4, nil, DBM_COMMON_L.INTERRUPT_ICON)
+local timerShadowNovaCD	= mod:NewCDTimer(6, 500295, nil, nil, nil, 2)--6.08-11.5, parsed log
+
+function mod:OnCombatStart()
+	self:SetStage(1)
+	self.vb.shadowFormApplied = false
+end
 
 function mod:SPELL_AURA_APPLIED(args)
 	if args.spellId == 19779 then
@@ -33,6 +43,12 @@ function mod:SPELL_AURA_APPLIED(args)
 		warnShadowPain:CombinedShow(0.3, args.destName)
 	elseif args.spellId == 20294 and args:IsDestTypePlayer() then
 		warnImmolate:CombinedShow(0.3, args.destName)
+	elseif args.spellId == 500296 and not self.vb.shadowFormApplied then
+		self.vb.shadowFormApplied = true
+		warnShadowForm:Show()
+		self:SetStage(2)
+		warnPhase2:Show()
+		timerShadowNovaCD:Start()
 	end
 end
 
@@ -47,5 +63,12 @@ function mod:SPELL_CAST_START(args)
 		timerHeal:Start()
 		specWarnHeal:Show(args.sourceName)
 		specWarnHeal:Play("kickcast")
+	end
+end
+
+function mod:SPELL_CAST_SUCCESS(args)
+	if args.spellId == 500295 then
+		warnShadowNova:Show()
+		timerShadowNovaCD:Start()
 	end
 end

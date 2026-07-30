@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Shazzrah", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20220518110528")
+mod:SetRevision("20260728220000")
 mod:SetCreatureID(12264)
 
 mod:SetModelID(13032)
@@ -9,9 +9,10 @@ mod:SetModelID(13032)
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_AURA_APPLIED 19714",
+	"SPELL_AURA_APPLIED 19714 500257",
 	"SPELL_AURA_REMOVED 19714",
-	"SPELL_CAST_SUCCESS 19713 19715 23138"
+	"SPELL_CAST_SUCCESS 19713 19715 23138",
+	"UNIT_HEALTH boss1"
 )
 
 --[[
@@ -20,6 +21,11 @@ mod:RegisterEventsInCombat(
 local warnCurse				= mod:NewSpellAnnounce(19713, 4)
 local warnDeadenMagic		= mod:NewTargetNoFilterAnnounce(19714, 2, nil, false, 2)
 local warnCntrSpell			= mod:NewSpellAnnounce(19715, 3, nil, "SpellCaster", 2)
+
+local warnPhase2Soon		= mod:NewPrePhaseAnnounce(2)
+local warnPhase2			= mod:NewPhaseAnnounce(2)
+local warnPhase3Soon		= mod:NewPrePhaseAnnounce(3)
+local warnPhase3			= mod:NewPhaseAnnounce(3)
 
 local specWarnDeadenMagic	= mod:NewSpecialWarningDispel(19714, false, nil, 2, 1, 2)
 local specWarnGate			= mod:NewSpecialWarningTaunt(23138, "Tank", nil, nil, 1, 2)--aggro wipe, needs fresh taunt
@@ -30,6 +36,9 @@ local timerGateCD			= mod:NewCDTimer(41.3+3.7, 23138, nil, "Tank", 2, 5, nil, DB
 local timerCounterSpellCD	= mod:NewCDTimer(15, 19715, nil, "SpellCaster", nil, 3)--15-19
 
 function mod:OnCombatStart(delay)
+	self:SetStage(1)
+	self.vb.warned_preP2 = false
+	self.vb.warned_preP3 = false
 	timerCurseCD:Start(6+3-delay)--6-10
 	timerCounterSpellCD:Start(9.6-0.1-delay)
 	timerGateCD:Start(30-delay)--30-31
@@ -44,6 +53,13 @@ function mod:SPELL_AURA_APPLIED(args)
 			warnDeadenMagic:Show(args.destName)
 		end
 		timerDeadenMagic:Start()
+	elseif args.spellId == 500257 then
+		self:SetStage(0)
+		if self.vb.phase == 2 then
+			warnPhase2:Show()
+		elseif self.vb.phase == 3 then
+			warnPhase3:Show()
+		end
 	end
 end
 
@@ -64,5 +80,15 @@ function mod:SPELL_CAST_SUCCESS(args)
 		specWarnGate:Show(args.sourceName)
 		specWarnGate:Play("tauntboss")
 		timerGateCD:Start()
+	end
+end
+
+function mod:UNIT_HEALTH(uId)
+	if self.vb.phase == 1 and not self.vb.warned_preP2 and self:GetUnitCreatureId(uId) == 12264 and UnitHealth(uId) / UnitHealthMax(uId) <= 0.71 then
+		self.vb.warned_preP2 = true
+		warnPhase2Soon:Show()
+	elseif self.vb.phase == 2 and not self.vb.warned_preP3 and self:GetUnitCreatureId(uId) == 12264 and UnitHealth(uId) / UnitHealthMax(uId) <= 0.38 then
+		self.vb.warned_preP3 = true
+		warnPhase3Soon:Show()
 	end
 end

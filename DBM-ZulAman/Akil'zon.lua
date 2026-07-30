@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Akilzon", "DBM-ZulAman")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20250105230600")
+mod:SetRevision("20260830230600")
 mod:SetCreatureID(23574)
 mod:SetEncounterID(1189)
 mod:SetZone()
@@ -18,7 +18,7 @@ local warnStormSoon		= mod:NewSoonAnnounce(43648, 5, 3)
 
 local specWarnStorm		= mod:NewSpecialWarningSpell(43648, nil, nil, nil, 2, 2)
 
-local StormCast			= mod:NewCastTimer(8.5, 43648, nil, nil, nil, 2, nil, DBM_COMMON_L.HEALER_ICON) --8.5s on AC
+local StormCast			= mod:NewCastTimer(8, 43648, nil, nil, nil, 2, nil, DBM_COMMON_L.HEALER_ICON) --8s on AC
 local TimerStorm 		= mod:NewNextTimer(60, 43648, "TimerStorm", nil, nil, 3) -- Fixed 60s on AC
 
 local berserkTimer		= mod:NewBerserkTimer(600)

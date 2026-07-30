@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Lucifron", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20220518110528")
+mod:SetRevision("20260728220000")
 mod:SetCreatureID(12118)--, 12119
 
 mod:SetModelID(13031)
@@ -11,7 +11,7 @@ mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
 	"SPELL_CAST_START 20604",
-	"SPELL_CAST_SUCCESS 19702 19703",
+	"SPELL_CAST_SUCCESS 19702 19703 28407",
 --	"SPELL_AURA_APPLIED 20604",
 	"SPELL_AURA_REMOVED 20604"
 )
@@ -22,13 +22,15 @@ mod:RegisterEventsInCombat(
 local warnDoom		= mod:NewSpellAnnounce(19702, 2)
 local warnCurse		= mod:NewSpellAnnounce(19703, 3)
 local warnMC		= mod:NewTargetNoFilterAnnounce(20604, 4)
+local warnVolley	= mod:NewSpellAnnounce(28407, 5)
 
 local specWarnMC	= mod:NewSpecialWarningYou(20604, nil, nil, nil, 1, 2)
 local yellMC		= mod:NewYell(20604)
 
-local timerCurseCD	= mod:NewCDTimer(20.5, 19703, nil, nil, nil, 3, nil, DBM_COMMON_L.CURSE_ICON)--20-25N)
-local timerDoomCD	= mod:NewCDTimer(20, 19702, nil, nil, nil, 3, nil, DBM_COMMON_L.MAGIC_ICON)--20-25
+local timerCurseCD	= mod:NewCDTimer(15, 19703, nil, nil, nil, 3, nil, DBM_COMMON_L.CURSE_ICON)--15.996-16.101, parsed log, rounded down to nearest 5
+local timerDoomCD	= mod:NewCDTimer(16, 19702, nil, nil, nil, 3, nil, DBM_COMMON_L.MAGIC_ICON)--17.985-18.117, parsed log
 --local timerDoom		= mod:NewCastTimer(10, 19702, nil, nil, nil, 3, nil, DBM_COMMON_L.MAGIC_ICON)
+local timerVolleyCD	= mod:NewCDTimer(10, 28407, nil, nil, nil, 3)--10.999-11.097, parsed log, rounded down to nearest 5
 
 mod:AddSetIconOption("SetIconOnMC", 20604, true, false, {1, 2})
 
@@ -38,6 +40,7 @@ function mod:OnCombatStart(delay)
 	self.vb.lastIcon = 1
 	timerDoomCD:Start(7-delay)--7-8
 	timerCurseCD:Start(12-delay)--12-15
+	timerVolleyCD:Start(14-delay)--14.216, parsed log
 end
 
 function mod:MCTarget(targetname)
@@ -87,5 +90,8 @@ function mod:SPELL_CAST_SUCCESS(args)
 	elseif args.spellId == 19703 then
 		warnCurse:Show()
 		timerCurseCD:Start()
+	elseif args.spellId == 28407 then
+		warnVolley:Show()
+		timerVolleyCD:Start()
 	end
 end

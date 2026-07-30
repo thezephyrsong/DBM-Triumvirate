@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Majordomo", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20220518110528")
+mod:SetRevision("20260728220000")
 mod:SetCreatureID(12018, 11663, 11664)
 
 mod:SetModelID(12029)
@@ -10,7 +10,9 @@ mod:RegisterCombat("combat")
 --mod:RegisterKill("yell", L.Kill)
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_SUCCESS 20619 21075 20534"
+	"SPELL_CAST_START 500320",
+	"SPELL_CAST_SUCCESS 20619 21075 20534",
+	"UNIT_DIED"
 )
 
 --[[
@@ -18,6 +20,7 @@ mod:RegisterEventsInCombat(
 --]]
 local warnTeleport			= mod:NewTargetNoFilterAnnounce(20534)
 local warnDamageShield		= mod:NewSpellAnnounce(21075, 2)
+local warnRiteOfRebirth	= mod:NewSpellAnnounce(500320, 2)
 
 local specWarnMagicReflect	= mod:NewSpecialWarningReflect(20619, "CasterDps", nil, 2, 1, 2)
 local specWarnDamageShield	= mod:NewSpecialWarningReflect(21075, false, nil, 2, 1, 2)
@@ -26,10 +29,27 @@ local timerMagicReflect		= mod:NewBuffActiveTimer(10, 20619, nil, nil, nil, 5, n
 local timerDamageShield		= mod:NewBuffActiveTimer(10, 21075, nil, nil, nil, 5, nil, DBM_COMMON_L.DAMAGE_ICON)
 local timerTeleportCD		= mod:NewCDTimer(25+5, 20534, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)--25-30
 local timerShieldCD			= mod:NewTimer(30.3-0.3, "timerShieldCD", nil, nil, nil, 6, nil, DBM_COMMON_L.DAMAGE_ICON)
+local timerRiteOfRebirth	= mod:NewCastTimer(10, 500320, nil, nil, nil, 5, nil, DBM_COMMON_L.HEALER_ICON)
+local timerRiteOfRebirthCD	= mod:NewCDTimer(30, 500320, nil, nil, nil, 5, nil, DBM_COMMON_L.HEALER_ICON)
 
 function mod:OnCombatStart(delay)
 	timerTeleportCD:Start(19.4-4.4-delay)
 	timerShieldCD:Start(27.8+2.2-delay)--27-30
+end
+
+function mod:SPELL_CAST_START(args)
+	if args.spellId == 500320 then
+		warnRiteOfRebirth:Show()
+		timerRiteOfRebirth:Start()
+		timerRiteOfRebirthCD:Start()
+	end
+end
+
+function mod:UNIT_DIED(args)
+	local cid = self:GetCIDFromGUID(args.destGUID)
+	if cid == 11663 or cid == 11664 then--Stops Rite of Rebirth early; no combat log event fires when the cast is cut short this way
+		timerRiteOfRebirth:Stop()
+	end
 end
 
 function mod:SPELL_CAST_SUCCESS(args)

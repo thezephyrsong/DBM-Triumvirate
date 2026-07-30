@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Geddon", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20220925180445")
+mod:SetRevision("20260728220000")
 mod:SetCreatureID(12056)
 
 mod:SetModelID(12129)
@@ -12,7 +12,9 @@ mod:RegisterCombat("combat")
 mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED 20475 19659",
 	"SPELL_AURA_REMOVED 20475",
-	"SPELL_CAST_SUCCESS 19695 19659 20478 20475"
+	"SPELL_CAST_SUCCESS 19695 19659 20478 20475",
+	"SPELL_DAMAGE 500256",
+	"SPELL_MISSED 500256"
 )
 
 --[[
@@ -27,6 +29,7 @@ local yellBomb			= mod:NewYell(20475)
 local yellBombFades		= mod:NewShortFadesYell(20475)
 local specWarnInferno	= mod:NewSpecialWarningRun(19695, "Melee", nil, nil, 4, 2)
 local specWarnIgnite	= mod:NewSpecialWarningDispel(19659, "RemoveMagic", nil, nil, 1, 2)
+local specWarnGTFO		= mod:NewSpecialWarningGTFO(500256, nil, nil, nil, 1, 8)
 
 local timerInfernoCD	= mod:NewCDTimer(21, 19695, nil, nil, nil, 2)--21-27.9
 local timerInferno		= mod:NewBuffActiveTimer(8, 19695, nil, nil, nil, 2)
@@ -95,5 +98,19 @@ function mod:SPELL_CAST_SUCCESS(args)
 		timerArmageddon:Start()
 	elseif args.spellId == 20475 then
 		timerBombCD:Start()
+	end
+end
+
+function mod:SPELL_DAMAGE(_, _, _, destGUID, _, _, spellId)
+	if spellId == 500256 and destGUID == UnitGUID("player") and self:AntiSpam(4, 1) then
+		specWarnGTFO:Show()
+		specWarnGTFO:Play("runaway")
+	end
+end
+
+function mod:SPELL_MISSED(_, _, _, destGUID, _, _, spellId, _, _, missType)
+	if spellId == 500256 and destGUID == UnitGUID("player") and missType == "ABSORB" and self:AntiSpam(4, 1) then
+		specWarnGTFO:Show()
+		specWarnGTFO:Play("runaway")
 	end
 end
