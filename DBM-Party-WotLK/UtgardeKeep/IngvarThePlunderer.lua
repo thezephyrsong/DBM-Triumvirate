@@ -1,9 +1,8 @@
 local mod	= DBM:NewMod("IngvarThePlunderer", "DBM-Party-WotLK", 10)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20251112220131")
+mod:SetRevision("20220823234921")
 mod:SetCreatureID(23980, 23954)
-mod:SetEncounterID(575)
 mod:SetUsedIcons(8)
 
 mod:RegisterCombat("combat")
@@ -24,18 +23,18 @@ local specWarnSpelllock	= mod:NewSpecialWarningCast(42729, "SpellCaster", nil, 2
 local specWarnSmash		= mod:NewSpecialWarningDodge(42723, "Tank", nil, nil, 1, 2)
 
 local timerSmash		= mod:NewCastTimer(3, 42723)
-local timerSmashCD		= mod:NewCDTimer("v9-11", 42723, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)
+local timerSmashCD		= mod:NewCDTimer(13, 42723, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)
 local timerWoeStrike	= mod:NewTargetTimer(10, 42723, nil, "RemoveCurse", nil, 5, nil, DBM_COMMON_L.CURSE_ICON)
 
 mod:AddSetIconOption("WoeStrikeIcon", 42730, true, false, {8})
 
 function mod:OnCombatStart()
 	self:SetStage(1)
-	timerSmashCD:Start(5)
+	timerSmashCD:Start(15)
 end
 
 function mod:SPELL_CAST_START(args)
-	if args:IsSpellID(42669, 42723, 59706, 59709) then
+	if args:IsSpellID(42723, 42669, 59706) then
 		specWarnSmash:Show()
 		specWarnSmash:Play("shockwave")
 		timerSmash:Start()
@@ -77,13 +76,11 @@ end
 function mod:CHAT_MSG_MONSTER_YELL(msg)
 	if msg == L.YellIngvarPhase2 or msg:find(L.YellIngvarPhase2) then
 		self:SetStage(2)
-		timerSmashCD:Cancel()
-		timerSmashCD:Start(5)
 	end
 end
 
---[[function mod:UNIT_SPELLCAST_SUCCEEDED(_, spellName) --doesnt work on AC
+function mod:UNIT_SPELLCAST_SUCCEEDED(_, spellName)
 	if spellName == GetSpellInfo(42863) then -- Scourge Resurrection
 		self:SetStage(2)
 	end
-end]]
+end

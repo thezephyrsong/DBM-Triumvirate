@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Magmadar", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260728220000")
+mod:SetRevision("20260804000000")
 mod:SetCreatureID(11982)
 
 mod:SetModelID(10193)

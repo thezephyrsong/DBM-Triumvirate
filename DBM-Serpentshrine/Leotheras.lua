@@ -1,9 +1,8 @@
 local mod	= DBM:NewMod("Leotheras", "DBM-Serpentshrine")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20250103133412")
+mod:SetRevision("20220812200037")
 mod:SetCreatureID(21215)
-mod:SetEncounterID(625)
 
 --mod:SetModelID(20514)
 mod:SetUsedIcons(5, 6, 7, 8)
@@ -12,6 +11,10 @@ mod:SetMinSyncRevision(20220812000000)
 
 mod:RegisterCombat("yell", L.YellPull) -- avoid using combat for this boss because attacking it on pull causes mod to engage.
 
+--Not using RegisterEventsInCombat on purpose because it uses weird combat rules
+--[[mod:RegisterEvents(
+	"UNIT_DIED"
+)]]
 mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED 37640 37676 37749",
 	"CHAT_MSG_MONSTER_YELL"
@@ -25,10 +28,10 @@ local warnPhase2				= mod:NewPhaseAnnounce(2, 2)
 local specWarnWhirl				= mod:NewSpecialWarningRun(37640, nil, nil, nil, 4, 2)
 local specWarnDemon				= mod:NewSpecialWarningYou(37676, nil, nil, nil, 1, 2)
 
-local timerWhirlCD				= mod:NewCDTimer(30.25, 37640, nil, nil, nil, 2, nil, nil, true) -- AC: 30250ms - 34900ms
+local timerWhirlCD				= mod:NewCDTimer(27+3.25, 37640, nil, nil, nil, 2) -- 25 man FM 2022/07/27 log - 27.0, 27.1, 27.0
 local timerWhirl				= mod:NewBuffActiveTimer(12, 37640, nil, nil, nil, 2)
 local timerPhase				= mod:NewTimer(60, "TimerPhase", 39088, nil, nil, 6)
-local timerInsidiousWhisperCD	= mod:NewCDTimer(24.25, 37676, nil, nil, nil, 6)
+local timerInsidiousWhisperCD	= mod:NewCDTimer(26-1.75, 37676, nil, nil, nil, 6) -- REVIEW! variance? (25 man FM 2022/07/27 log) - 26
 local timerInsidiousWhisper		= mod:NewBuffFadesTimer(30, 37676, nil, nil, nil, 6)
 
 local berserkTimer				= mod:NewBerserkTimer(600)
@@ -46,7 +49,7 @@ local function humanWarns(self)
 	self.vb.whirlCount = 0
 	warnPhase:Show(L.Human)
 	self.vb.isHuman = 1
-	timerWhirlCD:Start(30.25) -- AC: 30250ms - 34900ms
+	timerWhirlCD:Start(13+12.05) -- REVIEW! variance? (25 man FM 2022/07/27 log) - 13
 	timerPhase:Start(nil, L.Demon)
 end
 
@@ -69,7 +72,7 @@ function mod:OnCombatStart()
 	self:SetStage(1)
 	table.wipe(warnMCTargets)
 	table.wipe(warnDemonTargets)
-	timerWhirlCD:Start(25.05) -- AC: 25050ms - 32550ms
+	timerWhirlCD:Start(15.0+10.05) -- 25 man FM 2022/07/27 log - 15.0
 	timerPhase:Start(60, L.Demon)
 	berserkTimer:Start()
 end
@@ -134,9 +137,9 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 		timerInsidiousWhisperCD:Cancel()
 		warnPhase2:Show()
 		if self.vb.isHuman == 1 then
-			timerWhirlCD:Start(30.25) -- review 
+			timerWhirlCD:Start(11.5+5.5) -- REVIEW! variance? (25 man FM 2022/07/27 log) - 11.5
 		else
-			timerWhirlCD:Start(30.25)
+			timerWhirlCD:Start(25.05+10+10)
 		end
 	end
 end

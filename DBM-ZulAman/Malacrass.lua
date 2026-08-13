@@ -1,28 +1,28 @@
 local mod	= DBM:NewMod("Malacrass", "DBM-ZulAman")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20250317112900")
+mod:SetRevision("20260808000000")
 mod:SetCreatureID(24239)
-mod:SetEncounterID(1193)
+
 mod:SetZone()
 
 mod:RegisterCombat("yell", L.YellPull)
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 43548 43451 43431",
-	"SPELL_CAST_SUCCESS 43383 43429",
-	"SPELL_AURA_APPLIED 43501 43421 43429",
+	"SPELL_CAST_START 43548 43451 43431 43442",
+	"SPELL_CAST_SUCCESS 43383 43429 44131 43440",
+	"SPELL_AURA_APPLIED 43501 43421 43440 43429 43265 43443",
 	"SPELL_SUMMON 43436"
 )
 
---TODO, GTFO for standing in shit
 local warnSiphon	= mod:NewTargetNoFilterAnnounce(43501, 3)
 local warnBoltSoon	= mod:NewPreWarnAnnounce(43383, 5, 3)
+local warnDrain		= mod:NewSpellAnnounce(44131, 3)
 local warnHeal1		= mod:NewCastAnnounce(43548, 3)
 local warnHeal2		= mod:NewCastAnnounce(43451, 3)
 local warnHeal3		= mod:NewCastAnnounce(43431, 3)
 local warnHeal4		= mod:NewTargetNoFilterAnnounce(43421, 3)
-local warnPatch		= mod:NewSpecialWarningMove(43429, nil, nil, nil, 1, 2)
+local warnPatch		= mod:NewSpellAnnounce(43429, 3)
 
 local specWarnBolt	= mod:NewSpecialWarningSpell(43383, nil, nil, nil, 2, 2)
 local specWarnHeal1	= mod:NewSpecialWarningInterrupt(43548, "HasInterrupt", nil, nil, 1, 2)
@@ -30,76 +30,102 @@ local specWarnHeal2	= mod:NewSpecialWarningInterrupt(43451, "HasInterrupt", nil,
 local specWarnHeal3	= mod:NewSpecialWarningInterrupt(43431, "HasInterrupt", nil, nil, 1, 2)
 local specWarnHeal4	= mod:NewSpecialWarningDispel(43421, "MagicDispeller", nil, nil, 1, 2)
 local specWarnTotem	= mod:NewSpecialWarningSwitch(43436, "Dps", nil, nil, 1, 2)
+local specWarnRoF	= mod:NewSpecialWarningMove(43440, nil, nil, nil, 1, 2)
+local specWarnPatch	= mod:NewSpecialWarningMove(43429, nil, nil, nil, 1, 2)
+local specWarnDnD	= mod:NewSpecialWarningMove(43265, nil, nil, nil, 1, 2)
+local specWarnWW	= mod:NewSpecialWarningRun(43442, "Melee", nil, nil, 4, 2)
+local specWarnReflect	= mod:NewSpecialWarningReflect(43443, "SpellCaster", nil, nil, 1, 2)
 
 local timerSiphon	= mod:NewTargetTimer(30, 43501, nil, nil, nil, 6)
-local timerBoltCD	= mod:NewCDTimer(40, 43383, nil, nil, nil, 2, nil, DBM_COMMON_L.HEALER_ICON) -- 40seconds on AC
+local timerBoltCD	= mod:NewCDTimer(40, 43383, nil, nil, nil, 2, nil, DBM_COMMON_L.HEALER_ICON)
 local timerBolt		= mod:NewCastTimer(10, 43383, nil, nil, nil, 5, nil, DBM_COMMON_L.HEALER_ICON)
+local timerDrainCD	= mod:NewCDTimer(30, 44131, nil, nil, nil, 2)
+local timerRoFCD	= mod:NewCDTimer(15, 43440, nil, nil, nil, 3)
 local timerPatch	= mod:NewCastTimer(20, 43429, nil, nil, nil, 3)
 
 function mod:OnCombatStart()
-	timerBoltCD:Start(30) -- (10m Frostmourne 2022/10/28) - pull:30.0
+	timerBoltCD:Start(30)
+	timerRoFCD:Start(15)
 	warnBoltSoon:Schedule(25)
 end
 
 function mod:SPELL_CAST_START(args)
 	local spellId = args.spellId
-	if spellId == 43548 then -- Healing Wave
+	if spellId == 43548 then
 		if self.Options.SpecWarn43548interrupt and self:CheckInterruptFilter(args.sourceGUID, false, true) then
 			specWarnHeal1:Show(args.sourceName)
 			specWarnHeal1:Play("kickcast")
 		else
 			warnHeal1:Show()
 		end
-	elseif spellId == 43451 then -- Holy Light
+	elseif spellId == 43451 then
 		if self.Options.SpecWarn43451interrupt and self:CheckInterruptFilter(args.sourceGUID, false, true) then
 			specWarnHeal2:Show(args.sourceName)
 			specWarnHeal2:Play("kickcast")
 		else
 			warnHeal2:Show()
 		end
-	elseif spellId == 43431 then -- Flash Heal
+	elseif spellId == 43431 then
 		if self.Options.SpecWarn43431interrupt and self:CheckInterruptFilter(args.sourceGUID, false, true) then
 			specWarnHeal3:Show(args.sourceName)
 			specWarnHeal3:Play("kickcast")
 		else
 			warnHeal3:Show()
 		end
+	elseif spellId == 43442 then
+		specWarnWW:Show()
+		specWarnWW:Play("justrun")
 	end
 end
 
 function mod:SPELL_CAST_SUCCESS(args)
 	local spellId = args.spellId
-	if spellId == 43383 then -- Spirit Bolts
+	if spellId == 43383 then
 		specWarnBolt:Show()
 		specWarnBolt:Play("aesoon")
 		warnBoltSoon:Schedule(35)
 		timerBolt:Start()
 		timerBoltCD:Start()
-	elseif spellId == 43429 then -- Consescration
+	elseif spellId == 43429 then
+		warnPatch:Show()
 		timerPatch:Start()
+	elseif spellId == 44131 then
+		warnDrain:Show()
+		timerDrainCD:Start()
+	elseif spellId == 43440 and DBM:GetCIDFromGUID(args.sourceGUID) == 24239 then
+		timerRoFCD:Start()
 	end
 end
 
 function mod:SPELL_AURA_APPLIED(args)
 	local spellId = args.spellId
-	if spellId == 43501 then -- Siphon Soul
+	if spellId == 43501 then
 		warnSiphon:Show(args.destName)
 		timerSiphon:Show(args.destName)
-	elseif spellId == 43421 and not args:IsDestTypePlayer() then -- Lifebloom
+	elseif spellId == 43421 and not args:IsDestTypePlayer() then
 		if self:CheckInterruptFilter(args.sourceGUID, false, true) then
 			specWarnHeal4:Show(args.destName)
 			specWarnHeal4:Play("dispelboss")
 		else
 			warnHeal4:Show(args.destName)
 		end
-	elseif spellId == 43429 and args:IsPlayer() and self:AntiSpam(3, 3) then
-		warnPatch:Show()
-		warnPatch:Play("runaway")	
+	elseif spellId == 43440 and args:IsPlayer() then
+		specWarnRoF:Show()
+		specWarnRoF:Play("runaway")
+	elseif spellId == 43429 and args:IsPlayer() then
+		specWarnPatch:Show()
+		specWarnPatch:Play("runaway")
+	elseif spellId == 43265 and args:IsPlayer() then
+		specWarnDnD:Show()
+		specWarnDnD:Play("runaway")
+	elseif spellId == 43443 then
+		specWarnReflect:Show()
+		specWarnReflect:Play("stopattack")
 	end
 end
 
 function mod:SPELL_SUMMON(args)
-	if args.spellId == 43436 then -- Fire Nova Totem
+	if args.spellId == 43436 then
 		specWarnTotem:Show()
 		specWarnTotem:Play("attacktotem")
 	end

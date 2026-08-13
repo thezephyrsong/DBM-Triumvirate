@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Ragnaros-Classic", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260728220000")
+mod:SetRevision("20260804000000")
 mod:SetCreatureID(11502)
 mod:SetModelID(11121)
 mod:SetHotfixNoticeRev(20231219000000)--2023, 12, 19
@@ -9,7 +9,7 @@ mod:SetHotfixNoticeRev(20231219000000)--2023, 12, 19
 mod:RegisterCombat("combat")
 
 mod:RegisterEvents(
-	"SPELL_CAST_START 19774 20568",
+	"SPELL_CAST_START 19774 20568 500291",
 	"SPELL_CAST_SUCCESS 20566 19773",
 	"SPELL_INSTAKILL 19773",
 	"CHAT_MSG_MONSTER_YELL"
@@ -17,6 +17,7 @@ mod:RegisterEvents(
 mod:RegisterEventsInCombat( -- 2023/12/19: Cannot have already registered events, or it will fire in duplicate
 --	"SPELL_CAST_START 20568",
 --	"SPELL_CAST_SUCCESS 20566",
+	"SPELL_AURA_APPLIED 20228",
 	"SPELL_CAST_SUCCESS 25646 19408 20228 20475 500251 28407 19703 19716",
 	"UNIT_DIED"
 )
@@ -31,12 +32,14 @@ local warnSonsOfFlameLeft		= mod:NewAddsLeftAnnounce(19629, 2, 19774) -- spellId
 local warnMortalWound			= mod:NewSpellAnnounce(25646, 4)
 local warnPanic					= mod:NewSpellAnnounce(19408, 2)
 local warnPyroblast				= mod:NewTargetNoFilterAnnounce(20228, 4)
+local yellPyroblastDebuff		= mod:NewYell(20228)
 local warnLivingBomb			= mod:NewTargetNoFilterAnnounce(20475, 4)
 local yellLivingBomb			= mod:NewYell(20475)
 local warnVolcanicPunch			= mod:NewSpellAnnounce(500251, 2)
 local warnShadowBoltVolley		= mod:NewSpellAnnounce(28407, 5)
 local warnLucifronsCurse		= mod:NewSpellAnnounce(19703, 3)
 local warnGehennasCurse			= mod:NewSpellAnnounce(19716, 3)
+local warnSuperMegaExplosion	= mod:NewSpecialWarningRun(500291, nil, nil, nil, 4, 2)
 
 local specWarnRainOfFireGTFO	= mod:NewSpecialWarningGTFO(19717, nil, nil, nil, 1, 8)
 
@@ -53,6 +56,7 @@ local timerVolcanicPunchCD		= mod:NewCDTimer(25, 500251, nil, nil, nil, 2)--~25s
 local timerShadowBoltVolleyCD	= mod:NewCDTimer(10, 28407, nil, nil, nil, 3)--10.999-11.097, same as Lucifron's Shadow Bolt Volley
 local timerLucifronsCurseCD		= mod:NewCDTimer(15, 19703, nil, nil, nil, 3, nil, DBM_COMMON_L.CURSE_ICON)--15.996-16.101, same as Lucifron's Curse
 local timerGehennasCurseCD		= mod:NewCDTimer(25, 19716, nil, nil, nil, 3, nil, DBM_COMMON_L.HEALER_ICON..DBM_COMMON_L.CURSE_ICON)--26.7-30, same as Gehennas' Curse
+local timerSuperMegaExplosion	= mod:NewCastTimer(3, 500291, nil, nil, nil, 2)
 
 mod:AddRangeFrameOption("20") -- Blizz 18, AzerothCore +2 for regular chars, or 4 for male tauren/draenei
 
@@ -129,6 +133,13 @@ function mod:SPELL_CAST_START(args)
 --		warnEmerge:Show()
 --		timerWrathRag:Start(30) -- (40N Lordaeron [2023-09-13]@[19:05:07] || ) - 2222.61 > 2252.60 [29.99] || "Wrath of Ragnaros-20566-npc:11502-130 = pull:29.94, 22.16, 29.66, 28.36, 20.09, 24.10, Submerged/25.63, Emerged/89.99, Emerged/0.00, 30.08/30.08/120.06/145.69"
 		-- Don't start Submerge timer here, since Ragnaros will emerge after 90 seconds from Submerge/Summon Sons of Flames OR once all 8 are defeated (whichever happens first). The latter is variable and therefore not suitable for any timer
+	elseif spellId == 500291 then
+		warnSuperMegaExplosion:Show()
+		warnSuperMegaExplosion:Play("runaway")
+		timerSuperMegaExplosion:Start()
+	elseif spellId == 500251 then
+		warnVolcanicPunch:Show()
+		timerVolcanicPunchCD:Start()
 	end
 end
 
@@ -147,18 +158,9 @@ function mod:SPELL_CAST_SUCCESS(args)
 		warnPanic:Show()
 		timerPanicCD:Start()
 	elseif spellId == 20228 then
-		warnPyroblast:Show(args.destName)
 		timerPyroblastCD:Start()
 	elseif spellId == 20475 then
 		timerLivingBombCD:Start()
-		if args:IsPlayer() then
-			yellLivingBomb:Yell()
-		else
-			warnLivingBomb:Show(args.destName)
-		end
-	elseif spellId == 500251 then
-		warnVolcanicPunch:Show()
-		timerVolcanicPunchCD:Start()
 	elseif spellId == 28407 then
 		warnShadowBoltVolley:Show()
 		timerShadowBoltVolleyCD:Start()
@@ -168,6 +170,23 @@ function mod:SPELL_CAST_SUCCESS(args)
 	elseif spellId == 19716 then
 		warnGehennasCurse:Show()
 		timerGehennasCurseCD:Start()
+	end
+end
+
+function mod:SPELL_AURA_APPLIED(args)
+	local spellId = args.spellId
+	if spellId == 20228 then
+		if args:IsPlayer() then
+			yellPyroblastDebuff:Yell()
+		else
+			warnPyroblast:Show(args.destName)
+		end
+	elseif spellId == 20475 then
+		if args:IsPlayer() then
+			yellLivingBomb:Yell()
+		else
+			warnLivingBomb:Show(args.destName)
+		end
 	end
 end
 

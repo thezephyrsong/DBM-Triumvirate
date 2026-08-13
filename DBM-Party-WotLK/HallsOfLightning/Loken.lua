@@ -1,9 +1,8 @@
 local mod	= DBM:NewMod("Loken", "DBM-Party-WotLK", 6)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20251114220131")
+mod:SetRevision("20221004112204")
 mod:SetCreatureID(28923)
-mod:SetEncounterID(561)
 
 mod:RegisterCombat("combat")
 
@@ -15,7 +14,7 @@ local warningNova	= mod:NewSpellAnnounce(52960, 3)
 
 local specWarnNova	= mod:NewSpecialWarningRun(52960, false, nil, nil, 4, 2)
 
-local timerNovaCD	= mod:NewCDTimer(15, 52960, nil, nil, nil, 2)
+local timerNovaCD	= mod:NewCDTimer(30, 52960, nil, nil, nil, 2)
 local timerAchieve	= mod:NewAchievementTimer(120, 1867)
 
 function mod:OnCombatStart(delay)

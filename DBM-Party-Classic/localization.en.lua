@@ -494,12 +494,12 @@ L:SetGeneralLocalization({
 })
 
 -----------------------------
---  Illyanna Ravenoak  --
+--  Illyanna Ravensoak  --
 -----------------------------
 L = DBM:GetModLocalization(407)
 
 L:SetGeneralLocalization({
-	name		= "Illyanna Ravenoak"
+	name		= "Illyanna Ravensoak"
 })
 
 -----------------------------

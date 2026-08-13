@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Garr-Classic", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260728220000")
+mod:SetRevision("20260804000000")
 mod:SetCreatureID(12057)--, 12099
 
 mod:SetModelID(12110)
@@ -9,7 +9,8 @@ mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED 15732 500298",
-	"SPELL_CAST_SUCCESS 19492 500251 19496"
+	"SPELL_CAST_SUCCESS 19492 500251 19496",
+	"SPELL_CAST_START 500251"
 )
 
 --[[
@@ -45,11 +46,15 @@ function mod:SPELL_CAST_SUCCESS(args)
 	if args.spellId == 19492 then
 		warnAntiMagicPulse:Show()
 		timerAntiMagicPulseCD:Start()
-	elseif args.spellId == 500251 then
-		warnVolcanicPunch:Show()
-		timerVolcanicPunchCD:Start()
 	elseif args.spellId == 19496 then
 		warnMagmaShackles:Show()
 		timerMagmaShacklesCD:Start()
+	end
+end
+
+function mod:SPELL_CAST_START(args)
+	if args.spellId == 500251 then
+		warnVolcanicPunch:Show()
+		timerVolcanicPunchCD:Start()
 	end
 end

@@ -1,15 +1,15 @@
 local mod	= DBM:NewMod("Golemagg", "DBM-MC", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260728220000")
+mod:SetRevision("20260804000000")
 mod:SetCreatureID(11988)--, 11672
 
 mod:SetModelID(11986)
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_SUCCESS 20553 20228",
-	"SPELL_AURA_APPLIED 500263 20228",
+	"SPELL_CAST_SUCCESS 20228",
+	"SPELL_AURA_APPLIED 500263 20228 20553",
 	"SPELL_AURA_REFRESH 20228"
 )
 
@@ -38,8 +38,6 @@ function mod:SPELL_AURA_APPLIED(args)
 		if args:IsPlayer() then
 			specWarnPyroblastDebuff:Show()
 			yellPyroblastDebuff:Yell()
-		else
-			warnPyroblastDebuff:Show(args.destName)
 		end
 	end
 end

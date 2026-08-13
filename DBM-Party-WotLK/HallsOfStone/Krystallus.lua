@@ -1,38 +1,22 @@
 local mod	= DBM:NewMod("Krystallus", "DBM-Party-WotLK", 7)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20251112220131")
+mod:SetRevision("20220518110528")
 mod:SetCreatureID(27977)
-mod:SetEncounterID(563)
 
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"UNIT_SPELLCAST_SUCCEEDED"
+	"SPELL_CAST_SUCCESS 50833"
 )
 
-local specWarningShatter	= mod:NewSpecialWarningMoveAway(50810, nil, nil, nil, 1, 2)
-local timerGroundSlamCD		= mod:NewCDTimer(20, 50833, nil, nil, nil, 3)
+local warningShatter	= mod:NewSpellAnnounce(50810, 3)
 
-mod:AddRangeFrameOption("20")
+local timerShatterCD	= mod:NewCDTimer(25, 50810, nil, nil, nil, 2)
 
-function mod:UNIT_SPELLCAST_SUCCEEDED(_, spellName)
-	if spellName == GetSpellInfo(50827) and self:AntiSpam(5, 2) then  -- Ground Slam
-		specWarningShatter:Show()
-		specWarningShatter:Play("scatter")
-		timerGroundSlamCD:Start()
-		if self.Options.RangeFrame then
-			DBM.RangeCheck:Show(20)
-		end
-		elseif spellName == GetSpellInfo(50810) and self:AntiSpam(5, 3) then  -- Shatter
-		if self.Options.RangeFrame then
-			DBM.RangeCheck:Hide()
-		end
-	end
-end
-
-function mod:OnCombatEnd()
-	if self.Options.RangeFrame then
-		DBM.RangeCheck:Hide()
+function mod:SPELL_CAST_SUCCESS(args)
+	if args.spellId == 50833 then
+		warningShatter:Show()	-- Shatter warning when Ground Slam is cast
+		timerShatterCD:Start()
 	end
 end

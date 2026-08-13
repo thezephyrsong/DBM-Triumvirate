@@ -83,8 +83,6 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	HorsemanSummon			= "Erhebe dich, Reiter,...", -- CONFIRM! local SQL has different string - Erhebe dich, Reiter...
-	HorsemanHead			= "Komm hierher, du Idiot!",
-	HorsemanSoldiers		= "Soldaten, erhebt Euch und kämpft immer weiter. Bringt endlich den Sieg zum gefallenen Reiter!",
-	SayCombatEnd			= "Dieses Ende ist mir schon bekannt. Welch neue Abenteuer hat das Schicksal zur Hand?"
+	HorsemanSummon			= "Erhebe dich, Reiter,...",
+	HorsemanSoldiers		= "Soldaten, erhebt Euch und kämpft immer weiter. Bringt endlich den Sieg zum gefallenen Reiter!"
 })

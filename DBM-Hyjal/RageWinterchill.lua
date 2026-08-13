@@ -3,7 +3,6 @@ local L		= mod:GetLocalizedStrings()
 
 mod:SetRevision("20220518110528")
 mod:SetCreatureID(17767)
-mod:SetEncounterID(618)
 mod:SetModelID("creature/lich/lich.m2")
 mod:SetUsedIcons(8)
 
@@ -22,7 +21,7 @@ local specWarnIceBolt	= mod:NewSpecialWarningYou(31249, nil, nil, nil, 1, 2)
 local specWarnDnD		= mod:NewSpecialWarningGTFO(31258, nil, nil, nil, 1, 8)
 
 local timerDnd			= mod:NewBuffActiveTimer(16, 31258)
-local timerDndCD		= mod:NewCDTimer(45, 31258, nil, nil, nil, 3) --slight adjustment based on coding Cafe2024.05.31
+local timerDndCD		= mod:NewCDTimer(46, 31258, nil, nil, nil, 3)
 
 local berserkTimer		= mod:NewBerserkTimer(600)
 
@@ -30,7 +29,6 @@ mod:AddSetIconOption("IceBoltIcon", 31249, false, false, {8})
 
 function mod:OnCombatStart(delay)
 	berserkTimer:Start(-delay)
-	timerDndCD:Start(21-delay) --new estimated start timer Cafe2024.05.31
 end
 
 function mod:SPELL_AURA_APPLIED(args)
