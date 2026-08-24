@@ -33,14 +33,14 @@ local specWarnGate			= mod:NewSpecialWarningTaunt(23138, "Tank", nil, nil, 1, 2)
 local timerCurseCD			= mod:NewCDTimer(22+1, 19713, nil, nil, nil, 3, nil, DBM_COMMON_L.CURSE_ICON)--22-25.5 (20-25?)
 local timerDeadenMagic		= mod:NewBuffActiveTimer(30, 19714, nil, false, 3, 5, nil, DBM_COMMON_L.MAGIC_ICON)
 local timerGateCD			= mod:NewCDTimer(41.3+3.7, 23138, nil, "Tank", 2, 5, nil, DBM_COMMON_L.TANK_ICON)--41-50
-local timerCounterSpellCD	= mod:NewCDTimer(15, 19715, nil, "SpellCaster", nil, 3)--15-19
+local timerCounterSpellCD	= mod:NewCDTimer(15, 19715, nil, "SpellCaster", nil, 3)--15-18
 
 function mod:OnCombatStart(delay)
 	self:SetStage(1)
 	self.vb.warned_preP2 = false
 	self.vb.warned_preP3 = false
 	timerCurseCD:Start(6+3-delay)--6-10
-	timerCounterSpellCD:Start(9.6-0.1-delay)
+	timerCounterSpellCD:Start(9-delay)--9-10
 	timerGateCD:Start(30-delay)--30-31
 end
 
