@@ -17,65 +17,62 @@ mod:RegisterEvents(
 	"SPELL_DAMAGE 70305",
 	"SPELL_MISSED 70305",
 	"UNIT_DIED",
-	"UNIT_TARGET", -- currently unfiltered due to CORE not defaulting legacy uIds. Review valkyr code below if Core is changed
+	"UNIT_TARGET",
 	"CHAT_MSG_MONSTER_YELL"
 )
 
---Lower Spire
 local warnDisruptingShout		= mod:NewSpellAnnounce(71022, 2)
 local warnDarkReckoning			= mod:NewTargetNoFilterAnnounce(69483, 3)
 local warnDeathPlague			= mod:NewTargetNoFilterAnnounce(72865, 4)
---Plagueworks
+
 local warnZombies				= mod:NewSpellAnnounce(71159, 2)
 local warnMortalWound			= mod:NewStackAnnounce(71127, 2, nil, "Tank|Healer")
 local warnDecimateSoon			= mod:NewSoonAnnounce(71123, 3)
---Crimson Hall
+
 local warnBloodMirror			= mod:NewTargetNoFilterAnnounce(70451, 3, nil, "Healer|Tank")
 local warnBloodSap				= mod:NewTargetNoFilterAnnounce(70432, 4, nil, "Healer|Tank")
 local warnChainsofShadow		= mod:NewTargetNoFilterAnnounce(70645, 3, nil, false)
---Frostwing Hall
+
 local warnConflag				= mod:NewTargetNoFilterAnnounce(71785, 4, nil, false)
 local warnBanish				= mod:NewTargetNoFilterAnnounce(71298, 3, nil, false)
 
---Lower Spire
 local specWarnDisruptingShout	= mod:NewSpecialWarningCast(71022)
 local specWarnDarkReckoning		= mod:NewSpecialWarningMoveAway(69483)
 local specWarnDeathPlague		= mod:NewSpecialWarningYou(72865)
 local specWarnTrapL				= mod:NewSpecialWarning("SpecWarnTrapL")
---Plagueworks
+
 local specWarnSeveredEssence	= mod:NewSpecialWarningMove(71942)
 local specWarnDecimate			= mod:NewSpecialWarningSpell(71123)
 local specWarnMortalWound		= mod:NewSpecialWarningStack(71127, "Tank|Healer", 6)
 local specWarnTrapP				= mod:NewSpecialWarning("SpecWarnTrapP")
 local specWarnBlightBomb		= mod:NewSpecialWarningSpell(71088)
---Frostwing Hall
+
 local specWarnGosaEvent			= mod:NewSpecialWarning("SpecWarnGosaEvent")
 local specWarnBlade				= mod:NewSpecialWarningMove(70305)
 
---Lower Spire
 local timerDisruptingShout		= mod:NewCastTimer(3, 71022, nil, nil, nil, 2)
 local timerDarkReckoning		= mod:NewTargetTimer(8, 69483, nil, nil, nil, 5)
 local timerDeathPlague			= mod:NewTargetTimer(15, 72865, nil, nil, nil, 3)
---Plagueworks
-local timerSeveredEssence		= mod:NewNextTimer(35.5, 71942, nil, nil, nil, 1, nil, nil, true) -- REVIEW! 5s variance [35.5-40.5]. Added "keep" arg, but could be a bad idea!  (25H Lordaeron [2023-08-19]@[11:49:20] || 25H Lordaeron [2023-08-27]@[10:41:16]) - 36.0 || 40.49; 35.51
+
+local timerSeveredEssence		= mod:NewNextTimer(35.5, 71942, nil, nil, nil, 1, nil, nil, true)
 local timerZombies				= mod:NewNextTimer(20, 71159, nil, nil, nil, 1)
 local timerMortalWound			= mod:NewTargetTimer(15, 71127, nil, nil, nil, 5)
 local timerDecimate				= mod:NewNextTimer(33, 71123, nil, nil, nil, 2)
 local timerBlightBomb			= mod:NewCastTimer(5, 71088, nil, nil, nil, 3)
 local timerProfessorEvent		= mod:NewRPTimer(90, 70475, nil, nil, nil, 2)
---Crimson Hall
+
 local timerBloodMirror			= mod:NewTargetTimer(30, 70451, nil, "Healer|Tank", nil, 5)
 local timerBloodSap				= mod:NewTargetTimer(8, 70432, nil, "Healer|Tank", nil, 5)
 local timerChainsofShadow		= mod:NewTargetTimer(10, 70645, nil, false, nil, 3)
---Frostwing Hall
+
 local timerConflag				= mod:NewTargetTimer(10, 71785, nil, false, nil, 3)
 local timerBanish				= mod:NewTargetTimer(6, 71298, nil, false, nil, 3)
 
 mod:RemoveOption("HealthFrame")
---Lower Spire
+
 mod:AddSetIconOption("SetIconOnDarkReckoning", 69483, true, 0, {8})
 mod:AddSetIconOption("SetIconOnDeathPlague", 72865, true, 7, {1, 2, 3, 4, 5, 6, 7, 8})
---Crimson Hall
+
 mod:AddSetIconOption("BloodMirrorIcon", 70451, false, 0, {2})
 
 local valkyrHeraldGUID = {}
@@ -92,7 +89,7 @@ function mod:SPELL_CAST_START(args)
 		timerBlightBomb:Start(args.sourceGUID)
 	elseif spellId == 71123 then
 		specWarnDecimate:Show()
-		warnDecimateSoon:Cancel()	-- in case the first 1 is inaccurate, you wont have an invalid soon warning
+		warnDecimateSoon:Cancel()
 		warnDecimateSoon:Schedule(28)
 		timerDecimate:Start()
 	elseif spellId == 71942 then
@@ -150,7 +147,7 @@ function mod:SPELL_AURA_APPLIED(args)
 	elseif spellId == 71298 then
 		warnBanish:Show(args.destName)
 		timerBanish:Start(args.destName)
-	elseif spellId == 70475 and not eventProfessorStarted then -- Giant Insect Swarm
+	elseif spellId == 70475 and not eventProfessorStarted then
 		eventProfessorStarted = true
 		timerProfessorEvent:Start()
 	end
@@ -197,10 +194,10 @@ function mod:UNIT_DIED(args)
 		timerZombies:Cancel()
 		warnDecimateSoon:Cancel()
 		timerDecimate:Cancel()
-	elseif cid == 10404 then -- Pustulating Horror
+	elseif cid == 10404 then
 		timerBlightBomb:Cancel(destGUID)
-	elseif cid == 37098 then -- Val'kyr Herald
-		self:SendSync("ValkyrDeaggro", destGUID) -- would work with just timer cancel method, but switched to sync too since valk table is heavily dependant on syncing, and CLEU has a history of breaking
+	elseif cid == 37098 then
+		self:SendSync("ValkyrDeaggro", destGUID)
 	end
 end
 
@@ -213,34 +210,34 @@ do
 		uIdTarget = uId.."target"
 		local unitTargetIsValk = self:GetUnitCreatureId(uIdTarget) == 37098
 		local unitIsValk =  self:GetUnitCreatureId(uId) == 37098
-		if not unitIsValk and not unitTargetIsValk then return end -- Stop if unit is not Valk or if raid member did not target a Valk
+		if not unitIsValk and not unitTargetIsValk then return end
 
-		if unitTargetIsValk then -- Raid member fired this event
+		if unitTargetIsValk then
 			valkGUID = UnitGUID(uIdTarget)
 			valkHasTarget = UnitExists(uIdTarget.."target")
 
 			if not valkHasTarget and valkyrHeraldGUID[valkGUID] then
-				valkyrHeraldGUID[valkGUID] = nil -- Valk does not have a target -> hasn't aggroed anything or was reset
+				valkyrHeraldGUID[valkGUID] = nil
 				self:SendSync("ValkyrDeaggro", valkGUID)
 				DBM:Debug("Valkyr Herald \'" .. valkGUID .. "\' was reset")
 			end
 			if valkHasTarget and not valkyrHeraldGUID[valkGUID] then
-				valkyrHeraldGUID[valkGUID] = true -- Valkyr already had a raid target at the time of this check, meaning it was aggroed before, so prevent it from sending an aggro sync since timer would be innacurate.
+				valkyrHeraldGUID[valkGUID] = true
 				DBM:Debug("Valkyr Herald \'" .. valkGUID .. "\' already had aggro!")
 			end
-			return -- rest of code does not need to run, so return here
+			return
 		end
 
-		if unitIsValk then -- Valk fired this event
+		if unitIsValk then
 			valkGUID = UnitGUID(uId)
 			valkHasTarget = UnitExists(uIdTarget)
 			if not valkHasTarget and valkyrHeraldGUID[valkGUID] then
-				valkyrHeraldGUID[valkGUID] = nil -- Valk does not have a target -> hasn't aggroed anything or was reset
+				valkyrHeraldGUID[valkGUID] = nil
 				self:SendSync("ValkyrDeaggro", valkGUID)
 				DBM:Debug("Valkyr Herald \'" .. valkGUID .. "\' was reset")
 			end
 			if valkHasTarget and not valkyrHeraldGUID[valkGUID] then
-				valkyrHeraldGUID[valkGUID] = true -- duplicated from the OnSync handler, to prevent this code from running twice, as well as to workaround antispam measures
+				valkyrHeraldGUID[valkGUID] = true
 				self:SendSync("ValkyrAggro", valkGUID)
 			end
 		end
@@ -266,7 +263,7 @@ function mod:OnSync(msg, guid)
 		specWarnGosaEvent:Show()
 	elseif msg == "ValkyrAggro" and guid then
 		valkyrHeraldGUID[guid] = true
-		timerSeveredEssence:Start(8, guid) -- REVIEW! variance [8-10]? On Warmane, based on aggro, touchdown or swing?
+		timerSeveredEssence:Start(8, guid)
 	elseif msg == "ValkyrDeaggro" and guid then
 		valkyrHeraldGUID[guid] = nil
 		timerSeveredEssence:Cancel(guid)

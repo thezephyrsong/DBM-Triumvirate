@@ -2,18 +2,12 @@ if GetLocale() ~= "zhTW" then return end
 
 local L
 
-----------------------
---  Lord Marrowgar  --
-----------------------
 L = DBM:GetModLocalization("LordMarrowgar")
 
 L:SetGeneralLocalization({
 	name = "瑪洛嘉領主"
 })
 
--------------------------
---  Lady Deathwhisper  --
--------------------------
 L = DBM:GetModLocalization("Deathwhisper")
 
 L:SetGeneralLocalization({
@@ -38,7 +32,7 @@ L:SetOptionLocalization({
 	SpecWarnVengefulShade		= "當你被復仇的暗影盯上時顯示特別警告",
 	WeaponsStatus				= "戰鬥開始時提示自動武器卸載/裝備功能已啟用",
 	ShieldHealthFrame			= "為$spell:70842顯示首領血量框架",
---	RemoveDruidBuff				= "戰鬥開始24秒後自動移除野性印記/野性賜福",
+
 	RemoveBuffsOnMC				= "當 $spell:71289 對你施放時移除增益。每個選項都是累積的。",
 	Gift						= "移除 $spell:48469 / $spell:48470。防止 $spell:33786 抵抗的最小方法。",
 	CCFree						= "+ 移除 $spell:48169 / $spell:48170。說明影子學派的法術抗性。",
@@ -51,16 +45,11 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "起來，在純粹的形態中感受狂喜!",
 	ShieldPercent			= "法力屏障",
---	Fanatic1				= "神教狂熱者",
---	Fanatic2				= "畸形的狂熱者",
---	Fanatic3				= "再活化的狂熱者",
+
 	setMissing				= "注意力！ 在您創建名為 pve 的裝備集之前，DBM 自動武器卸載/裝備將不起作用，pve裝備集為全套裝備及武器",
 	EqUneqLineDescription	= "自動裝備/取消裝備"
 })
 
-----------------------
---  Gunship Battle  --
-----------------------
 L = DBM:GetModLocalization("GunshipBattle")
 
 L:SetGeneralLocalization({
@@ -91,9 +80,6 @@ L:SetMiscLocalization({
 	KillHorde		= "聯盟已經動搖了。向巫妖王前進!"
 })
 
------------------------------
---  Deathbringer Saurfang  --
------------------------------
 L = DBM:GetModLocalization("Deathbringer")
 
 L:SetGeneralLocalization({
@@ -102,7 +88,7 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	RunePowerFrame		= "顯示首領血量及$spell:72371條",
---	RemoveDI			= "清除 $spell:19752 如果用於防止 $spell:72293"
+
 })
 
 L:SetMiscLocalization({
@@ -111,9 +97,6 @@ L:SetMiscLocalization({
 	PullHorde			= "柯爾克隆，前進!勇士們，要當心，天譴軍團已經..."
 })
 
------------------
---  Festergut  --
------------------
 L = DBM:GetModLocalization("Festergut")
 
 L:SetGeneralLocalization({
@@ -130,9 +113,6 @@ L:SetMiscLocalization({
 	AchievementFailed	= ">> 成就失敗: %s中了%d層孢子 <<"
 })
 
----------------
---  Rotface  --
----------------
 L = DBM:GetModLocalization("Rotface")
 
 L:SetGeneralLocalization({
@@ -155,18 +135,12 @@ L:SetMiscLocalization({
 	YellSlimePipes2	= "大夥聽著，超級好消息!軟泥又開始流動了!"
 })
 
----------------------------
---  Professor Putricide  --
----------------------------
 L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "普崔希德教授"
 })
 
-----------------------------
---  Blood Prince Council  --
-----------------------------
 L = DBM:GetModLocalization("BPCouncil")
 
 L:SetGeneralLocalization({
@@ -198,9 +172,6 @@ L:SetMiscLocalization({
 	EmpoweredFlames		= "煉獄烈焰加速靠近(%S+)!"
 })
 
------------------------------
---  Blood-Queen Lana'thel  --
------------------------------
 L = DBM:GetModLocalization("Lanathel")
 
 L:SetGeneralLocalization({
@@ -212,9 +183,6 @@ L:SetMiscLocalization({
 	YellFrenzy				= "我餓了!"
 })
 
------------------------------
---  Valithria Dreamwalker  --
------------------------------
 L = DBM:GetModLocalization("Valithria")
 
 L:SetGeneralLocalization({
@@ -244,9 +212,6 @@ L:SetMiscLocalization({
 	YellPortals		= "我打開了一道傳送門通往夢境。你們的救贖就在其中，英雄們..."
 })
 
-------------------
---  Sindragosa  --
-------------------
 L = DBM:GetModLocalization("Sindragosa")
 
 L:SetGeneralLocalization({
@@ -279,16 +244,13 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	YellAirphase		= "你們的入侵將在此終止!誰也別想存活!",
 	YellPhase2			= "現在，絕望地感受我主無限的力量吧!",
-	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
-	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
+	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",
+	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",
 	BeaconIconSet		= "冰霜信標{rt%d}: %s",
 	AchievementWarning	= "警告: %s中了5層秘能連擊",
 	AchievementFailed	= ">> 成就失敗: %s中了%d層秘能連擊 <<"
 })
 
----------------------
---  The Lich King  --
----------------------
 L = DBM:GetModLocalization("LichKing")
 
 L:SetGeneralLocalization({
@@ -342,9 +304,6 @@ L:SetMiscLocalization({
 	FrameGUIMoveMe			= "移動華爾琪框架"
 })
 
--------------
---  Trash  --
--------------
 L = DBM:GetModLocalization("ICCTrash")
 
 L:SetGeneralLocalization({

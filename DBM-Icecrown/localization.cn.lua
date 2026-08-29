@@ -1,17 +1,12 @@
 if GetLocale() ~= "zhCN" then return end
 local L
-----------------------
---  Lord Marrowgar  --
-----------------------
+
 L = DBM:GetModLocalization("LordMarrowgar")
 
 L:SetGeneralLocalization({
 	name = "玛洛加尔领主"
 })
 
--------------------------
---  Lady Deathwhisper  --
--------------------------
 L = DBM:GetModLocalization("Deathwhisper")
 
 L:SetGeneralLocalization({
@@ -25,40 +20,35 @@ L:SetTimerLocalization({
 L:SetWarningLocalization({
 	WarnReanimating = "小怪再活化",
 	WarnAddsSoon = "新的小怪即将到来",
-	SpecWarnVengefulShade = "怨毒之影目标是你 - 快躲开", --creatureid 38222 -- Modified by Emi
-	WeaponsStatus = "自动卸下武器开启" -- Modified by Emi
+	SpecWarnVengefulShade = "怨毒之影目标是你 - 快躲开",
+	WeaponsStatus = "自动卸下武器开启"
 })
 
 L:SetOptionLocalization({
 	WarnAddsSoon = "为新的小怪出现显示预先警告",
 	WarnReanimating = "当小怪再活化时显示警告",
 	TimerAdds = "为新的小怪显示计时器",
-	SpecWarnVengefulShade = "当怨毒之影攻击你时显示特殊警报", -- Modified by Emi
-	WeaponsStatus = "如果卸下/装备武器功能启用，在战斗开始时显示特殊警报", -- Modified by Emi
-	ShieldHealthFrame = "显示 Boss 血条，并为 $spell:70842 显示专门血条", -- Modified by Emi
-	SoundWarnCountingMC = "为心灵控制播放5秒声音倒数", -- Modified by Emi
---	RemoveDruidBuff = "Remove $spell:48469 / $spell:48470 24 seconds into the fight",
+	SpecWarnVengefulShade = "当怨毒之影攻击你时显示特殊警报",
+	WeaponsStatus = "如果卸下/装备武器功能启用，在战斗开始时显示特殊警报",
+	ShieldHealthFrame = "显示 Boss 血条，并为 $spell:70842 显示专门血条",
+	SoundWarnCountingMC = "为心灵控制播放5秒声音倒数",
+
 	RemoveBuffsOnMC = "当$spell:71289对你施法时，移除BUFF。每个选项都是累积的。",
 	Gift = "移除$spell:48469 / $spell:48470。防止$spell:33786抵制的最简单方法。",
-	CCFree = "+ 删除$spell:48169 / $spell:48170。考虑到阴影法术的抵抗。", -- Modified by Emi
-	ShortOffensiveProcs = "+ 删除持续时间短的攻击性程序。建议在不影响突击队伤害输出的情况下保证团队的安全。", -- Modified by Emi
-	MostOffensiveBuffs = "+ 移除大部分攻击性BUFF（主要针对施法者和|cFFFF7C0A野性德鲁伊|r）。在损失伤害输出和需要自我补血/移形换影的情况下，最大限度地保证了团队的安全！", -- Modified by Emi
-	EqUneqWeapons = "如果$spell:71289 对你施放，自动卸下/装备武器。要使这一功能正常工作，请创建一个名为\"pve\"的完整套装（要包含你需要装备的武器）。", -- Modified by Emi
-	EqUneqTimer = "不论目标是否是你，总是按照心控计时卸下/装备武器（建议在高延迟时使用）。必须在前一选项开启的情况下使用。" -- Modified by Emi
+	CCFree = "+ 删除$spell:48169 / $spell:48170。考虑到阴影法术的抵抗。",
+	ShortOffensiveProcs = "+ 删除持续时间短的攻击性程序。建议在不影响突击队伤害输出的情况下保证团队的安全。",
+	MostOffensiveBuffs = "+ 移除大部分攻击性BUFF（主要针对施法者和|cFFFF7C0A野性德鲁伊|r）。在损失伤害输出和需要自我补血/移形换影的情况下，最大限度地保证了团队的安全！",
+	EqUneqWeapons = "如果$spell:71289 对你施放，自动卸下/装备武器。要使这一功能正常工作，请创建一个名为\"pve\"的完整套装（要包含你需要装备的武器）。",
+	EqUneqTimer = "不论目标是否是你，总是按照心控计时卸下/装备武器（建议在高延迟时使用）。必须在前一选项开启的情况下使用。"
 })
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic = "来吧，为纯粹的形态欢喜吧！",
---	Fanatic1 = "教派狂热者",
---	Fanatic2 = "畸形的狂热者",
---	Fanatic3 = "被复活的狂热者",
+
 	setMissing = "注意力！ 在您创建名为 pve 的装备集之前，DBM 自动武器卸载/装备将不起作用",
 	EqUneqLineDescription	= "自动装备/取消装备"
 })
 
-----------------------
---  Gunship Battle  --
-----------------------
 L = DBM:GetModLocalization("GunshipBattle")
 
 L:SetGeneralLocalization({
@@ -89,9 +79,6 @@ L:SetMiscLocalization({
 	KillHorde = "联盟不行了。向巫妖王进攻！",
 })
 
------------------------------
---  Deathbringer Saurfang  --
------------------------------
 L = DBM:GetModLocalization("Deathbringer")
 
 L:SetGeneralLocalization({
@@ -100,7 +87,7 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	RunePowerFrame = "显示首领血量及$spell:72371条",
---	RemoveDI = "如果用于阻止 $spell:72293 施法，则清除 $spell:19752"
+
 })
 
 L:SetMiscLocalization({
@@ -109,9 +96,6 @@ L:SetMiscLocalization({
 	PullHorde = "库卡隆，行动！勇士们，提高警惕。天灾军团已经……"
 })
 
------------------
---  Festergut  --
------------------
 L = DBM:GetModLocalization("Festergut")
 
 L:SetGeneralLocalization({
@@ -120,7 +104,7 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	AnnounceSporeIcons = "公布$spell:69279目标设置的标记到团队频道<br/>(需要团队队长)",
-	AchievementCheck = "公布 '勤通风，多喝水' 成就失败到团队频道<br/>(需助理权限)" -- Modified by Emi
+	AchievementCheck = "公布 '勤通风，多喝水' 成就失败到团队频道<br/>(需助理权限)"
 })
 
 L:SetMiscLocalization({
@@ -128,9 +112,6 @@ L:SetMiscLocalization({
 	AchievementFailed = ">> 成就失败: %s中了%d层孢子 <<"
 })
 
----------------
---  Rotface  --
----------------
 L = DBM:GetModLocalization("Rotface")
 
 L:SetGeneralLocalization({
@@ -145,7 +126,7 @@ L:SetWarningLocalization({
 L:SetOptionLocalization({
 	WarnOozeSpawn = "为小软泥的出现显示警告",
 	SpecWarnLittleOoze = "当你被小软泥怪盯上时显示特別警告",
-	TankArrow = "为软泥坦克显示DBM箭头（测试功能）" -- Modified by Emi
+	TankArrow = "为软泥坦克显示DBM箭头（测试功能）"
 })
 
 L:SetMiscLocalization({
@@ -153,18 +134,12 @@ L:SetMiscLocalization({
 	YellSlimePipes2 = "重大喜讯！各位！软泥又开始流动啦！"
 })
 
----------------------------
---  Professor Putricide  --
----------------------------
 L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "普崔塞德教授"
 })
 
-----------------------------
---  Blood Prince Council  --
-----------------------------
 L = DBM:GetModLocalization("BPCouncil")
 
 L:SetGeneralLocalization({
@@ -182,9 +157,9 @@ L:SetTimerLocalization({
 
 L:SetOptionLocalization({
 	WarnTargetSwitch = "为转换目标显示警告",
-	WarnTargetSwitchSoon = "为转换目标显示临近警告", -- Modified by Emi
+	WarnTargetSwitchSoon = "为转换目标显示临近警告",
 	TimerTargetSwitch = "为转换目标显示冷却计时器",
-	ActivePrinceIcon = "在強化的王子身上设置标记(骷髅)", -- Modified by Emi
+	ActivePrinceIcon = "在強化的王子身上设置标记(骷髅)",
 	ShadowPrisonMetronome = "播放一个重复的1秒钟的点击声，以避免$spell:72999"
 })
 
@@ -196,9 +171,6 @@ L:SetMiscLocalization({
 	EmpoweredFlames = "强能烈焰飞快地冲向(%S+)！"
 })
 
------------------------------
---  Blood-Queen Lana'thel  --
------------------------------
 L = DBM:GetModLocalization("Lanathel")
 
 L:SetGeneralLocalization({
@@ -210,9 +182,6 @@ L:SetMiscLocalization({
 	YellFrenzy = "我该去咬人啦!"
 })
 
------------------------------
---  Valithria Dreamwalker  --
------------------------------
 L = DBM:GetModLocalization("Valithria")
 
 L:SetGeneralLocalization({
@@ -225,15 +194,15 @@ L:SetWarningLocalization({
 
 L:SetTimerLocalization({
 	TimerPortalsOpen = "传送门开启",
-	TimerPortalsClose = "传送门关闭", -- Modified by Emi
+	TimerPortalsClose = "传送门关闭",
 	TimerBlazingSkeleton = "下一次炽热骷髅",
 	TimerAbom = "下一次憎恶体 (%s)"
 })
 
 L:SetOptionLocalization({
 	WarnPortalOpen = "当梦魇之门开启时显示警告",
-	TimerPortalsOpen = "为梦魇之门开启显示计时器", -- Modified by Emi
-	TimerPortalsClose = "为梦魇之门关闭显示计时器", -- Modified by Emi
+	TimerPortalsOpen = "为梦魇之门开启显示计时器",
+	TimerPortalsClose = "为梦魇之门关闭显示计时器",
 	TimerBlazingSkeleton = "为下一次炽热骷髅出现显示计时器"
 })
 
@@ -242,9 +211,6 @@ L:SetMiscLocalization({
 	YellPortals = "我打开了进入梦境的传送门。英雄们，救赎就在其中……",
 })
 
-------------------
---  Sindragosa  --
-------------------
 L = DBM:GetModLocalization("Sindragosa")
 
 L:SetGeneralLocalization({
@@ -270,23 +236,20 @@ L:SetOptionLocalization({
 	AnnounceFrostBeaconIcons = "公布$spell:70126目标设置的标记到团队频道<br/>(需要团队队长)",
 	ClearIconsOnAirphase = "空中阶段前清除所有标记",
 	AssignWarnDirectionsCount = "为 $spell:70126 目标分配方向并在第 2 阶段进行计数",
-	AchievementCheck = "公布 '极限' 成就警告到团队频道<br/>(需助理权限)", -- Modified by Emi
+	AchievementCheck = "公布 '极限' 成就警告到团队频道<br/>(需助理权限)",
 	RangeFrame = "根据最后首领使用的技能跟玩家减益显示动态距离框(10/20码)"
 })
 
 L:SetMiscLocalization({
 	YellAirphase = "你们的入侵结束了！无人可以生还！",
 	YellPhase2 = "绝望吧，体会主人那无穷无尽的力量吧！",
-	YellAirphaseDem = "Rikk zilthuras rikk zila Aman adare tiriosh ", --Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
-	YellPhase2Dem = "Zar kiel xi romathIs zilthuras revos ruk toralar ", --Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
+	YellAirphaseDem = "Rikk zilthuras rikk zila Aman adare tiriosh ",
+	YellPhase2Dem = "Zar kiel xi romathIs zilthuras revos ruk toralar ",
 	BeaconIconSet = "冰霜道标{rt%d}: %s",
 	AchievementWarning = "警告: %s中了5层秘法打击",
 	AchievementFailed = ">> 成就失败: %s中了%d层秘法打击 <<"
 })
 
----------------------
---  The Lich King  --
----------------------
 L = DBM:GetModLocalization("LichKing")
 
 L:SetGeneralLocalization({
@@ -296,31 +259,31 @@ L:SetGeneralLocalization({
 L:SetWarningLocalization({
 	ValkyrWarning = "%s >%s< %s 被抓住了!",
 	SpecWarnYouAreValkd = "你被抓住了",
-	WarnNecroticPlagueJump = "死疽跳到>%s<身上", -- Modified by Emi
+	WarnNecroticPlagueJump = "死疽跳到>%s<身上",
 	SpecWarnValkyrLow = "瓦基里安血量低于55%"
 })
 
 L:SetTimerLocalization({
 	TimerRoleplay = "角色扮演",
 	PhaseTransition = "转换阶段",
-	TimerNecroticPlagueCleanse = "驱散死疽" -- Modified by Emi
+	TimerNecroticPlagueCleanse = "驱散死疽"
 })
 
 L:SetOptionLocalization({
 	TimerRoleplay = "为角色扮演事件显示计时器",
 	WarnNecroticPlagueJump = "提示$spell:73912跳跃后的目标",
-	TimerNecroticPlagueCleanse = "为驱散第一层死疽显示计时器", -- Modified by Emi
+	TimerNecroticPlagueCleanse = "为驱散第一层死疽显示计时器",
 	PhaseTransition = "为转换阶段显示计时器",
-	ValkyrWarning = "提示谁给瓦格里暗影戒卫者抓住了", -- Modified by Emi
-	SpecWarnYouAreValkd = "当你给瓦格里暗影戒卫者抓住时显示特別警告", -- Modified by Emi
-	AnnounceValkGrabs = "提示谁被瓦格里暗影戒卫者抓住到团队频道<br/>(需开启团队广播及助理权限)", -- Modified by Emi
-	SpecWarnValkyrLow = "当瓦格里血量低于55%时显示特別警告", -- Modified by Emi
+	ValkyrWarning = "提示谁给瓦格里暗影戒卫者抓住了",
+	SpecWarnYouAreValkd = "当你给瓦格里暗影戒卫者抓住时显示特別警告",
+	AnnounceValkGrabs = "提示谁被瓦格里暗影戒卫者抓住到团队频道<br/>(需开启团队广播及助理权限)",
+	SpecWarnValkyrLow = "当瓦格里血量低于55%时显示特別警告",
 	AnnouncePlagueStack = "提示$spell:73912层数到团队频道 (10层, 10层后每5层提示一次)<br/>(需开启助理权限)",
-	ShowFrame = "显示瓦格里者抓人框架", -- Modified by Emi
-	FrameClassColor = "在瓦格里者抓人框架中显示职业颜色", -- Modified by Emi
-	FrameUpwards = "瓦格里框架向上生长", -- Modified by Emi
-	FrameLocked = "锁定瓦格里框架", -- Modified by Emi
-	RemoveImmunes = "在离开霜之哀伤时移除无敌类Buff" -- Modified by Emi
+	ShowFrame = "显示瓦格里者抓人框架",
+	FrameClassColor = "在瓦格里者抓人框架中显示职业颜色",
+	FrameUpwards = "瓦格里框架向上生长",
+	FrameLocked = "锁定瓦格里框架",
+	RemoveImmunes = "在离开霜之哀伤时移除无敌类Buff"
 })
 
 L:SetMiscLocalization({
@@ -328,25 +291,22 @@ L:SetMiscLocalization({
 	LKRoleplay = "真的是正义在驱使你吗？我很好奇……",
 	ValkGrabbedIcon = "瓦格里影卫{rt%d}抓住了%s",
 	ValkGrabbed = "瓦格里影卫抓住了%s",
-	PlagueStackWarning = "警告: %s中了%d层死疽", -- Modified by Emi
-	AchievementCompleted = ">> 成就成功: %s中了%d层死疽 <<", -- Modified by Emi
-	FrameTitle = "瓦格里目标", -- Modified by Emi
-	FrameLock = "框架锁定", -- Modified by Emi
-	FrameClassColor = "显示职业颜色", -- Modified by Emi
-	FrameOrientation = "向上生长", -- Modified by Emi
-	FrameHide = "隐藏框架", -- Modified by Emi
-	FrameClose = "关闭", -- Modified by Emi
+	PlagueStackWarning = "警告: %s中了%d层死疽",
+	AchievementCompleted = ">> 成就成功: %s中了%d层死疽 <<",
+	FrameTitle = "瓦格里目标",
+	FrameLock = "框架锁定",
+	FrameClassColor = "显示职业颜色",
+	FrameOrientation = "向上生长",
+	FrameHide = "隐藏框架",
+	FrameClose = "关闭",
 	FrameGUIDesc = "瓦格里框架",
 	FrameGUIMoveMe = "移动瓦格里框架"
 })
 
--------------
---  Trash  --
--------------
 L = DBM:GetModLocalization("ICCTrash")
 
 L:SetGeneralLocalization({
-	name = "冰冠堡垒小怪" -- Modified by Emi
+	name = "冰冠堡垒小怪"
 })
 
 L:SetWarningLocalization({

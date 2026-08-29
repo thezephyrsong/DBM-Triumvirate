@@ -2,18 +2,12 @@ if GetLocale() ~= "esES" then return end
 
 local L
 
-------------------
--- Lord Tuétano --
-------------------
 L = DBM:GetModLocalization("LordMarrowgar")
 
 L:SetGeneralLocalization({
 	name = "Lord Tuétano"
 })
 
-------------------------
--- Lady Susurramuerte --
-------------------------
 L = DBM:GetModLocalization("Deathwhisper")
 
 L:SetGeneralLocalization({
@@ -25,21 +19,21 @@ L:SetTimerLocalization({
 })
 
 L:SetWarningLocalization({
-	WarnReanimating				= "Esbirro reanimado",			-- Reanimating an adherent or fanatic
+	WarnReanimating				= "Esbirro reanimado",
 	WarnAddsSoon				= "Esbirros en breve",
-	SpecWarnVengefulShade		= "¡Sombra vengativa te ataca! ¡Corre!",--creatureid 38222
+	SpecWarnVengefulShade		= "¡Sombra vengativa te ataca! ¡Corre!",
 	WeaponsStatus				= "Desequipar automático habilitado"
 })
 
 L:SetOptionLocalization({
 	WarnAddsSoon				= "Mostrar aviso previo para cuando aparezcan esbirros",
-	WarnReanimating				= "Mostrar aviso cuando se esté reanimando a un esbirro",	-- Reanimated Adherent/Fanatic spawning
+	WarnReanimating				= "Mostrar aviso cuando se esté reanimando a un esbirro",
 	TimerAdds					= "Mostrar temporizador para los siguientes esbirros",
-	SpecWarnVengefulShade		= "Mostrar aviso especial cuando te ataque una Sombra vengativa",--creatureid 38222
+	SpecWarnVengefulShade		= "Mostrar aviso especial cuando te ataque una Sombra vengativa",
 	WeaponsStatus				= "Advertencia especial al inicio del combate si la función desequipar/equipar está habilitada",
 	ShieldHealthFrame			= "Mostrar barra de vida del boss con una barra de vida para $spell:70842",
-	SoundWarnCountingMC			= "Play a 5 second audio countdown for Mind Control", --Needs Translating
---	RemoveDruidBuff				= "Quitar $spell:48469 / $spell:48470 24 segundos después de la pelea",
+	SoundWarnCountingMC			= "Play a 5 second audio countdown for Mind Control",
+
 	RemoveBuffsOnMC				= "Elimina los buffs cuando $spell:71289 es lanzado sobre ti. Cada opción es acumulativa",
 	Gift						= "Eliminar $spell:48469 / $spell:48470. Enfoque mínimo para evitar que $spell:33786 se resista",
 	CCFree						= "+ Eliminar $spell:48169 / $spell:48170. Tener en cuenta las resistencias de los hechizos de la escuela Sombra",
@@ -52,16 +46,11 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "¡Álzate y goza de tu verdadera forma!",
 	ShieldPercent			= "Barrera de maná",
---	Fanatic1				= "Fanático del Culto",
---	Fanatic2				= "Fanático deformado",
---	Fanatic3				= "Fanático reanimado",
+
 	setMissing				= "¡ATENCIÓN! El desequipamiento / equipamiento automático de armas de DBM no funcionará hasta que cree un equipamiento llamado pve",
 	EqUneqLineDescription	= "Equipar/desequipar automático"
 })
 
---------------------------------
--- Batalla de naves de guerra --
---------------------------------
 L = DBM:GetModLocalization("GunshipBattle")
 
 L:SetGeneralLocalization({
@@ -92,9 +81,6 @@ L:SetMiscLocalization({
 	KillHorde		= "La Alianza retrocede. ¡Hacia el Rey Exánime!"
 })
 
-------------------------------
--- Libramorte Colmillosauro --
-------------------------------
 L = DBM:GetModLocalization("Deathbringer")
 
 L:SetGeneralLocalization({
@@ -103,7 +89,7 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	RunePowerFrame		= "Mostrar barra de vida + barra de $spell:72371",
---	RemoveDI			= "Quitar $spell:19752 si se utiliza para prevenir lanzamiento de $spell:72293."
+
 })
 
 L:SetMiscLocalization({
@@ -112,9 +98,6 @@ L:SetMiscLocalization({
 	PullHorde			= "¡Kor'kron, vámonos! Campeones, vigilad vuestra retaguardia. La Plaga ha sido..."
 })
 
-------------------
--- Panzachancro --
-------------------
 L = DBM:GetModLocalization("Festergut")
 
 L:SetGeneralLocalization({
@@ -131,9 +114,6 @@ L:SetMiscLocalization({
 	AchievementFailed	= ">> LOGRO FALLADO: %s tiene %d acumulaciones de Inoculado <<"
 })
 
-----------------
--- Carapútrea --
-----------------
 L = DBM:GetModLocalization("Rotface")
 
 L:SetGeneralLocalization({
@@ -142,32 +122,26 @@ L:SetGeneralLocalization({
 
 L:SetWarningLocalization({
 	WarnOozeSpawn				= "Moco pequeño",
-	SpecWarnLittleOoze			= "Te está atacando un Moco pequeño - ¡huye!"--creatureid 36897
+	SpecWarnLittleOoze			= "Te está atacando un Moco pequeño - ¡huye!"
 })
 
 L:SetOptionLocalization({
 	WarnOozeSpawn				= "Mostrar aviso cuando aparezca un Moco pequeño",
-	SpecWarnLittleOoze			= "Mostrar aviso especial cuando te ataque un Moco pequeño",--creatureid 36897
+	SpecWarnLittleOoze			= "Mostrar aviso especial cuando te ataque un Moco pequeño",
 	TankArrow					= "Mostrar flecha hacia el tanque del Moco grande (Experimental)"
 })
 
 L:SetMiscLocalization({
-	YellSlimePipes1	= "¡Buenas noticias, amigos! He arreglado las tuberías de babosas venenosas.",	-- Professor Putricide
-	YellSlimePipes2	= "¡Grandes noticias, amigos! Las babosas vuelven a fluir."	-- Professor Putricide
+	YellSlimePipes1	= "¡Buenas noticias, amigos! He arreglado las tuberías de babosas venenosas.",
+	YellSlimePipes2	= "¡Grandes noticias, amigos! Las babosas vuelven a fluir."
 })
 
--------------------------
--- Profesor Putricidio --
--------------------------
 L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Profesor Putricidio"
 })
 
-------------------------------------
--- Consejo de Príncipes de Sangre --
-------------------------------------
 L = DBM:GetModLocalization("BPCouncil")
 
 L:SetGeneralLocalization({
@@ -184,8 +158,8 @@ L:SetTimerLocalization({
 })
 
 L:SetOptionLocalization({
-	WarnTargetSwitch		= "Mostrar aviso cuando haya que cambiar de objetivo",-- Warn when another Prince needs to be damaged
-	WarnTargetSwitchSoon	= "Mostrar aviso previo para cuando haya que cambiar de objetivo",-- Every ~47 secs, you have to dps a different Prince
+	WarnTargetSwitch		= "Mostrar aviso cuando haya que cambiar de objetivo",
+	WarnTargetSwitchSoon	= "Mostrar aviso previo para cuando haya que cambiar de objetivo",
 	TimerTargetSwitch		= "Mostrar temporizador para el siguiente cambio de objetivo",
 	ActivePrinceIcon		= "Poner icono (calavera) en el príncipe potenciado",
 	ShadowPrisonMetronome	= "Reproducir un sonido de clic repetido de 1 segundo para evitar $spell:72999"
@@ -199,9 +173,6 @@ L:SetMiscLocalization({
 	EmpoweredFlames		= "¡Llamas potenciadas arremeten contra (%S+)!"
 })
 
--------------------------------
--- Reina de Sangre Lana'thel --
--------------------------------
 L = DBM:GetModLocalization("Lanathel")
 
 L:SetGeneralLocalization({
@@ -213,9 +184,6 @@ L:SetMiscLocalization({
 	YellFrenzy				= "¡Tengo hambre!"
 })
 
-----------------------------
--- Valithria Caminasueños --
-----------------------------
 L = DBM:GetModLocalization("Valithria")
 
 L:SetGeneralLocalization({
@@ -245,9 +213,6 @@ L:SetMiscLocalization({
 	YellPortals		= "He abierto un portal al Sueño. Vuestra salvación está dentro, héroes..."
 })
 
-----------------
--- Sindragosa --
-----------------
 L = DBM:GetModLocalization("Sindragosa")
 
 L:SetGeneralLocalization({
@@ -280,16 +245,13 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	YellAirphase		= "¡Aquí termina vuestra incursión! ¡Nadie sobrevivirá!",
 	YellPhase2			= "¡Ahora sentid el poder sin fin de mi maestro y desesperad!",
-	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
-	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
+	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",
+	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",
 	BeaconIconSet		= "Icono {rt%d} de Señal de Escarcha en %s",
 	AchievementWarning	= "Aviso: %s tiene 5 acumulaciones de Sacudida mística",
 	AchievementFailed	= ">> LOGRO FALLADO: %s tiene %d acumulaciones de Sacudida mística <<"
 })
 
---------------------
--- El Rey Exánime --
---------------------
 L = DBM:GetModLocalization("LichKing")
 
 L:SetGeneralLocalization({
@@ -315,7 +277,7 @@ L:SetOptionLocalization({
 	TimerNecroticPlagueCleanse	= "Mostrar temporizador para purgar Plaga necrótica antes del primer pulso",
 	PhaseTransition				= "Mostrar duración de los intermedios",
 	ValkyrWarning				= "Anunciar jugadores agarrados por las Guardias de las Sombras Val'kyr",
-	SpecWarnYouAreValkd			= "Mostrar aviso especial cuando te agarrae una Guardia de las Sombras Val'kyr",--npc36609
+	SpecWarnYouAreValkd			= "Mostrar aviso especial cuando te agarrae una Guardia de las Sombras Val'kyr",
 	AnnounceValkGrabs			= "Anunciar jugadores agarrados por las Guardias de las Sombras Val'kyr en el chat de banda (requiere líder o ayudante)",
 	SpecWarnValkyrLow			= "Mostrar aviso especial cuando una Guardia de las Sombras Val'kyr esté por debajo del 55% de salud",
 	AnnouncePlagueStack			= "Anunciar acumulaciones de $spell:70337 en el chat de banda (al llegar a 10 y tras cada 5; requiere líder o ayudante)",
@@ -333,19 +295,16 @@ L:SetMiscLocalization({
 	ValkGrabbed				= "Una Val'kyr ha agarrado a %s",
 	PlagueStackWarning		= "Aviso: %s tiene %d acumulaciones de Peste necrótica",
 	AchievementCompleted	= ">> LOGRO COMPLETADO: %s tiene %d acumulaciones de Plaga necrótica <<",
-	FrameTitle				= "Valkyr targets", --Needs Translating
-	FrameLock				= "Frame Lock", --Needs Translating
-	FrameClassColor			= "Use Class Colors", --Needs Translating
-	FrameOrientation		= "Expand upwards", --Needs Translating
-	FrameHide				= "Hide Frame", --Needs Translating
-	FrameClose				= "Close", --Needs Translating
+	FrameTitle				= "Valkyr targets",
+	FrameLock				= "Frame Lock",
+	FrameClassColor			= "Use Class Colors",
+	FrameOrientation		= "Expand upwards",
+	FrameHide				= "Hide Frame",
+	FrameClose				= "Close",
 	FrameGUIDesc			= "Marco Val'Kyr",
 	FrameGUIMoveMe			= "Mover marco Val'Kyr"
 })
 
-----------------------
--- Enemigos menores --
-----------------------
 L = DBM:GetModLocalization("ICCTrash")
 
 L:SetGeneralLocalization({
