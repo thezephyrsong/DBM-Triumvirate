@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("LordMarrowgar", "DBM-Icecrown", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830100000")
 mod:SetCreatureID(36612)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
 mod:SetHotfixNoticeRev(20260829000000)
@@ -85,6 +85,7 @@ end
 
 function mod:SPELL_CAST_START(args)
 	if args:IsSpellID(69057, 70826, 72088, 72089) or args:IsSpellID(73144, 73145) then
+		self:AntiSpam(3, 3)
 		warnBoneSpike:Show()
 		timerBoneSpike:Start()
 		timerBoneSpikeUp:Start()
@@ -107,6 +108,9 @@ mod.SPELL_PERIODIC_MISSED = mod.SPELL_PERIODIC_DAMAGE
 
 function mod:SPELL_SUMMON(args)
 	if args:IsSpellID(69062, 72669, 72670) then
+		if self:AntiSpam(3, 3) then
+			timerBoneSpike:Start()
+		end
 		warnImpale:CombinedShow(0.3, args.sourceName)
 		timerBoned:Restart()
 		if self.Options.SetIconOnImpale then

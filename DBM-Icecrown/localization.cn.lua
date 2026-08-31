@@ -44,6 +44,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic = "来吧，为纯粹的形态欢喜吧！",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 
 	setMissing = "注意力！ 在您创建名为 pve 的装备集之前，DBM 自动武器卸载/装备将不起作用",
 	EqUneqLineDescription	= "自动装备/取消装备"
@@ -93,7 +94,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower = "鲜血能量",
 	PullAlliance = "你每消灭一名部落士兵，或是杀死一只联盟狗。巫妖王的军力就会增长一分。瓦格里正在把你们的阵亡者变为天灾战士。",
-	PullHorde = "库卡隆，行动！勇士们，提高警惕。天灾军团已经……"
+	PullHorde = "库卡隆，行动！勇士们，提高警惕。天灾军团已经……",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -138,6 +140,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "普崔塞德教授"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -288,6 +294,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull = "怎么，自诩正义的圣光终于来了？我是不是该丢下霜之哀伤，恳求您的宽恕呢，弗丁？",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay = "真的是正义在驱使你吗？我很好奇……",
 	ValkGrabbedIcon = "瓦格里影卫{rt%d}抓住了%s",
 	ValkGrabbed = "瓦格里影卫抓住了%s",

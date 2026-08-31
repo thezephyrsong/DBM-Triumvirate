@@ -45,6 +45,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "Восстань и обрети истинную форму!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "Барьер маны",
 
 	setMissing				= "ВНИМАНИЕ! DBM: автоматическое снимание/надевание оружия не будет работать пока вы не создадите набор экипировки pve",
@@ -96,7 +97,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "Сила крови",
 	PullAlliance		= "Все павшие воины Орды, все дохлые псы Альянса – все пополнят армию Короля-лича. Даже сейчас валь'киры воскрешают ваших покойников, чтобы те стали частью Плети!",
-	PullHorde			= "Кор'крон, выдвигайтесь! Герои, будьте начеку. Плеть только что..."
+	PullHorde			= "Кор'крон, выдвигайтесь! Герои, будьте начеку. Плеть только что...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -141,6 +143,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Профессор Мерзоцид"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -291,6 +297,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "Неужели прибыли наконец хваленые силы Света? Мне бросить Ледяную Скорбь и сдаться на твою милость, Фордринг?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "Что движет вами?.. Праведность? Не знаю...",
 	ValkGrabbedIcon			= "Валь'кира {rt%d} схватила %s",
 	ValkGrabbed				= "Валь'кира схватила %s",

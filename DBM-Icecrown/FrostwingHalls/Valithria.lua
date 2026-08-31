@@ -60,39 +60,13 @@ local portalNameH = GetSpellInfo(71987)
 
 local function Suppressers(self)
 	self.vb.SuppressersWave = self.vb.SuppressersWave + 1
-	if self.vb.SuppressersWave == 2 then
-		timerSuppressers:Stop()
-		timerSuppressers:Start(58, self.vb.SuppressersWave)
-		specWarnSuppressers:Cancel()
-		specWarnSuppressers:Schedule(58)
-		soundSpecWarnSuppressers:Schedule(58, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
-		self:Unschedule(Suppressers)
-		self:Schedule(58, Suppressers, self)
-	elseif self.vb.SuppressersWave == 3 then
-		timerSuppressers:Stop()
-		timerSuppressers:Start(56, self.vb.SuppressersWave)
-		specWarnSuppressers:Cancel()
-		specWarnSuppressers:Schedule(56)
-		soundSpecWarnSuppressers:Schedule(56, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
-		self:Unschedule(Suppressers)
-		self:Schedule(56, Suppressers, self)
-	elseif self.vb.SuppressersWave == 4 then
-		timerSuppressers:Stop()
-		timerSuppressers:Start(50, self.vb.SuppressersWave)
-		specWarnSuppressers:Cancel()
-		specWarnSuppressers:Schedule(50)
-		soundSpecWarnSuppressers:Schedule(50, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
-		self:Unschedule(Suppressers)
-		self:Schedule(50, Suppressers, self)
-	elseif self.vb.SuppressersWave > 4 then
-		timerSuppressers:Stop()
-		timerSuppressers:Start(50, self.vb.SuppressersWave)
-		specWarnSuppressers:Cancel()
-		specWarnSuppressers:Schedule(50)
-		soundSpecWarnSuppressers:Schedule(50, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
-		self:Unschedule(Suppressers)
-		self:Schedule(50, Suppressers, self)
-	end
+	timerSuppressers:Stop()
+	timerSuppressers:Start(59, self.vb.SuppressersWave)
+	specWarnSuppressers:Cancel()
+	specWarnSuppressers:Schedule(59)
+	soundSpecWarnSuppressers:Schedule(59, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
+	self:Unschedule(Suppressers)
+	self:Schedule(59, Suppressers, self)
 end
 
 local function StartBlazingSkeletonTimer(self)
@@ -151,10 +125,10 @@ function mod:OnCombatStart(delay)
 	timerAbom:Start(22-delay, 1)
 	self:Schedule(22-delay, StartAbomTimer, self)
 	self.vb.SuppressersWave = 1
-	timerSuppressers:Start(28-delay, self.vb.SuppressersWave)
-	specWarnSuppressers:Schedule(28)
-	soundSpecWarnSuppressers:Schedule(28, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
-	self:Schedule(28, Suppressers, self)
+	timerSuppressers:Start(70-delay, self.vb.SuppressersWave)
+	specWarnSuppressers:Schedule(70-delay)
+	soundSpecWarnSuppressers:Schedule(70-delay, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\suppressersSpawned.mp3")
+	self:Schedule(70-delay, Suppressers, self)
 end
 
 function mod:SPELL_CAST_START(args)

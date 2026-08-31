@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("GunshipBattle", "DBM-Icecrown", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830000000")
 local addsIcon
 local bossID
 mod:RegisterCombat("combat")
@@ -30,6 +30,7 @@ mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED_DOSE 72306 69638",
 	"SPELL_AURA_REMOVED 69705",
 	"SPELL_CAST_START 69705",
+	"UNIT_DIED",
 	"UNIT_SPELLCAST_SUCCEEDED boss1 boss2"
 )
 
@@ -44,6 +45,7 @@ local warnAddsSoon			= mod:NewAnnounce("WarnAddsSoon", 2, addsIcon)
 
 local timerCombatStart		= mod:NewCombatTimer(47.5)
 local timerBelowZeroCD		= mod:NewNextTimer(35, 69705, nil, nil, nil, 5, nil, DBM_COMMON_L.DAMAGE_ICON, nil, 1)
+local timerBelowZeroCast	= mod:NewCastTimer(5, 69705, nil, nil, nil, 5)
 local timerBattleFuryActive	= mod:NewBuffActiveTimer(17, 69638, nil, "Tank|Healer", nil, 5, nil, DBM_COMMON_L.TANK_ICON)
 local timerAdds				= mod:NewTimer(60, "TimerAdds", addsIcon, nil, nil, 1)
 local timerBladestormCD		= mod:NewCDTimer(25, 69652, nil, "Melee", nil, 3)
@@ -69,11 +71,6 @@ function mod:OnCombatStart(delay)
 	warnAddsSoon:Schedule(7-delay)
 
 	self.vb.firstMage = false
-	if UnitFactionGroup("player") == "Alliance" then
-		timerBelowZeroCD:Start(39-delay)
-	else
-		timerBelowZeroCD:Start(37-delay)
-	end
 end
 
 function mod:SPELL_AURA_APPLIED(args)
@@ -107,14 +104,23 @@ function mod:SPELL_AURA_APPLIED_DOSE(args)
 end
 
 function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 69705 and self:AntiSpam(2, 2) then
+	if args.spellId == 69705 and self:AntiSpam(5, 2) then
 		timerBelowZeroCD:Start()
+	end
+end
+
+function mod:UNIT_DIED(args)
+	local cid = self:GetCIDFromGUID(args.destGUID)
+	if (cid == 37116 or cid == 37117) and timerBelowZeroCast:IsStarted() then
+		timerBelowZeroCast:Cancel()
 	end
 end
 
 function mod:SPELL_CAST_START(args)
 	if args.spellId == 69705 then
 		warnBelowZero:Show()
+		timerBelowZeroCast:Cancel()
+		timerBelowZeroCD:Cancel()
 	end
 end
 
@@ -132,19 +138,9 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 	elseif (msg:find(L.AddsAlliance) or msg:find(L.AddsHorde)) and self:IsInCombat() then
 
 		Adds(self)
-	elseif (msg:find(L.MageAlliance) or msg == L.MageAlliance) and self:IsInCombat() then
-		if not self.vb.firstMage then
-			timerBelowZeroCD:Update(34, 39)
-			self.vb.firstMage = true
-		else
-			timerBelowZeroCD:Update(30, 35)
-		end
-	elseif (msg:find(L.MageHorde) or msg == L.MageHorde) and self:IsInCombat() then
-		if not self.vb.firstMage then
-			timerBelowZeroCD:Update(34.5, 37)
-			self.vb.firstMage = true
-		else
-			timerBelowZeroCD:Update(32.5, 35)
-		end
+	elseif (msg:find(L.MageAlliance) or msg == L.MageAlliance or msg:find(L.MageHorde) or msg == L.MageHorde) and self:IsInCombat() then
+		self.vb.firstMage = true
+		timerBelowZeroCD:Cancel()
+		timerBelowZeroCast:Start()
 	end
 end

@@ -48,6 +48,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "Arise, and exult in your pure form!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "Mana Barrier",
 
 	setMissing				= "ATTENTION! DBM automatic weapon unequipping/equipping will not work until you create a equipment set named pve",
@@ -99,7 +100,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "Blood Power",
 	PullAlliance		= "For every Horde soldier that you killed -- for every Alliance dog that fell, the Lich King's armies grew. Even now the val'kyr work to raise your fallen as Scourge.",
-	PullHorde			= "Kor'kron, move out! Champions, watch your backs. The Scourge have been..."
+	PullHorde			= "Kor'kron, move out! Champions, watch your backs. The Scourge have been...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -144,6 +146,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Professor Putricide"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -294,6 +300,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "So the Light's vaunted justice has finally arrived? Shall I lay down Frostmourne and throw myself at your mercy, Fordring?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "Is it truly righteousness that drives you? I wonder...",
 	ValkGrabbedIcon			= "Valkyr Shadowguard {rt%d} grabbed %s",
 	ValkGrabbed				= "Valkyr Shadowguard grabbed %s",

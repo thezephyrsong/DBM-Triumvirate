@@ -4,7 +4,7 @@ local L		= mod:GetLocalizedStrings()
 local CancelUnitBuff, GetSpellInfo = CancelUnitBuff, GetSpellInfo
 local UnitGUID = UnitGUID
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830100000")
 mod:SetCreatureID(36855)
 mod:SetUsedIcons(1, 2, 3, 7, 8)
 mod:SetMinSyncRevision(20220905000000)
@@ -12,8 +12,9 @@ mod:SetMinSyncRevision(20220905000000)
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 71420 72007 72501 72502 70900 70901 72499 72500 72497 72496",
-	"SPELL_CAST_SUCCESS 71289 71204 72905 72906 72907 72908 71001 72108 72109 72110",
+	"SPELL_CAST_START 71420 72007 72501 72502 70900 70901 72499 72500 72497 72496 72905 72906 72907 72908",
+	"SPELL_CAST_SUCCESS 71289 71204 72905 72906 72907 72908 71001 72108 72109 72110 52096",
+	"SPELL_SUMMON 71426",
 	"SPELL_AURA_APPLIED 71289 71001 72108 72109 72110 71237 70674 71204",
 	"SPELL_AURA_APPLIED_DOSE 71204",
 	"SPELL_AURA_REMOVED 70842 71289",
@@ -239,6 +240,7 @@ end
 local function showDominateMindWarning(self)
 	warnDominateMind:Show(table.concat(dominateMindTargets, "<, >"))
 	timerDominateMind:Start()
+	timerDominateMindCD:Restart()
 	if checkWeaponRemovalSetting(self) then
 		if not tContains(dominateMindTargets, UnitName("player")) then
 			DBM:Debug("Equipping scheduled")
@@ -258,15 +260,17 @@ local function showDominateMindWarning(self)
 end
 
 local function addsTimer(self)
+	self:Unschedule(addsTimer)
 	timerAdds:Cancel()
+	warnAddsSoon:Cancel()
 	warnAddsSoon:Cancel()
 	if self:IsHeroic() then
 		warnAddsSoon:Schedule(40)
-		self:Schedule(45, addsTimer, self)
+		self:Schedule(49, addsTimer, self)
 		timerAdds:Start(45)
 	else
 		warnAddsSoon:Schedule(55)
-		self:Schedule(60, addsTimer, self)
+		self:Schedule(64, addsTimer, self)
 		timerAdds:Start()
 	end
 end
@@ -319,7 +323,7 @@ function mod:OnCombatStart(delay)
 	berserkTimer:Start(-delay)
 	timerAdds:Start(5-delay)
 	warnAddsSoon:Schedule(2-delay)
-	self:Schedule(5-delay, addsTimer, self)
+	self:Schedule(9-delay, addsTimer, self)
 	timerDeathDecayCD:Start(10-delay)
 	if not self:IsDifficulty("normal10") then
 		timerDominateMindCD:Start(30-delay)
@@ -369,6 +373,8 @@ function mod:SPELL_CAST_START(args)
 	elseif args:IsSpellID(72499, 72500, 72497, 72496) then
 		specWarnDarkMartyrdom:Show()
 		specWarnDarkMartyrdom:Play("justrun")
+	elseif args:IsSpellID(72905, 72906, 72907, 72908) and self:AntiSpam(3, 5) then
+		timerFrostboltVolleyCD:Start()
 	end
 end
 
@@ -393,8 +399,10 @@ function mod:SPELL_CAST_SUCCESS(args)
 				DBM:Debug("Unequipping", 2)
 			end
 		end
-	elseif args:IsSpellID(72905, 72906, 72907, 72908) then
+	elseif args:IsSpellID(72905, 72906, 72907, 72908) and self:AntiSpam(3, 5) then
 		timerFrostboltVolleyCD:Start()
+	elseif spellId == 52096 and self:AntiSpam(5, 6) then
+		addsTimer(self)
 	elseif spellId == 71204 then
 		timerTouchInsignificanceCD:Start()
 	elseif args:IsSpellID(71001, 72108, 72109, 72110) and self:AntiSpam(3, 4) then
@@ -456,7 +464,7 @@ function mod:SPELL_AURA_REMOVED(args)
 		if self:IsHeroic() then
 			timerAdds:Start(45)
 			warnAddsSoon:Schedule(40)
-			self:Schedule(45, addsTimer, self)
+			self:Schedule(49, addsTimer, self)
 		end
 		if self.Options.InfoFrame then
 			DBM.InfoFrame:Hide()
@@ -490,6 +498,8 @@ end
 function mod:CHAT_MSG_MONSTER_YELL(msg)
 	if msg == L.YellReanimatedFanatic or msg:find(L.YellReanimatedFanatic) then
 		warnReanimating:Show()
+	elseif msg == L.YellDominateMind or msg:find(L.YellDominateMind, 1, true) then
+		timerDominateMindCD:Restart()
 	end
 end
 
@@ -501,6 +511,12 @@ function mod:PLAYER_TARGET_CHANGED()
 	end
 	self:Unschedule(unregisterShortTermEvents)
 	self:UnregisterShortTermEvents()
+end
+
+function mod:SPELL_SUMMON(args)
+	if args.spellId == 71426 then
+		self:UNIT_SPELLCAST_SUCCEEDED(nil, summonSpiritName)
+	end
 end
 
 function mod:UNIT_SPELLCAST_SUCCEEDED(_, spellName)

@@ -4,7 +4,7 @@ local L		= mod:GetLocalizedStrings()
 local UnitGUID, UnitName, GetSpellInfo = UnitGUID, UnitName, GetSpellInfo
 local UnitInRange, UnitIsUnit, UnitInVehicle, IsInRaid = UnitInRange, UnitIsUnit, UnitInVehicle, DBM.IsInRaid
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830100000")
 mod:SetCreatureID(36597)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7)
 mod:SetHotfixNoticeRev(20240220000000)
@@ -18,9 +18,8 @@ mod:RegisterEvents(
 
 mod:RegisterEventsInCombat(
 
-	"SPELL_CAST_START 72143 72146 72147 72148 73650 69242 73800 73801 73802",
-
-	"SPELL_CAST_SUCCESS 70337 73912 73913 73914 69409 73797 73798 73799 69200 68980 74325 74326 74327",
+	"SPELL_CAST_START",
+	"SPELL_CAST_SUCCESS",
 	"SPELL_DISPEL",
 	"SPELL_AURA_APPLIED 28747 72754 73708 73709 73710 73650",
 	"SPELL_AURA_APPLIED_DOSE 70338 73785 73786 73787",
@@ -68,9 +67,9 @@ local specWarnTrapNear				= mod:NewSpecialWarningClose(73539, nil, nil, nil, 3, 
 local specWarnEnrage				= mod:NewSpecialWarningSpell(72143, "Tank")
 local specWarnEnrageLow				= mod:NewSpecialWarningSpell(28747, false)
 
-local timerInfestCD					= mod:NewCDCountTimer(22.5, 70541, nil, "Healer|RaidCooldown", nil, 5, nil, DBM_COMMON_L.HEALER_ICON, true)
+local timerInfestCD					= mod:NewCDCountTimer(22.5, 70541, nil, "Healer|RaidCooldown", nil, 5, nil, DBM_COMMON_L.HEALER_ICON)
 local timerNecroticPlagueCleanse	= mod:NewTimer(5, "TimerNecroticPlagueCleanse", 70337, "Healer", nil, 5, DBM_COMMON_L.HEALER_ICON, nil, nil, nil, nil, nil, nil, 70337)
-local timerNecroticPlagueCD			= mod:NewCDTimer(30, 70337, nil, nil, nil, 3, nil, DBM_COMMON_L.DISEASE_ICON, true)
+local timerNecroticPlagueCD			= mod:NewCDTimer(30, 70337, nil, nil, nil, 3, nil, DBM_COMMON_L.DISEASE_ICON)
 local timerEnrageCD					= mod:NewCDCountTimer("d20", 72143, nil, "Tank|RemoveEnrage", nil, 5, nil, DBM_COMMON_L.ENRAGE_ICON)
 local timerShamblingHorror			= mod:NewNextTimer(60, 70372, nil, nil, nil, 1)
 local timerDrudgeGhouls				= mod:NewNextTimer(30, 70358, nil, nil, nil, 1)
@@ -103,8 +102,8 @@ local specWarnValkyrLow				= mod:NewSpecialWarning("SpecWarnValkyrLow", nil, nil
 
 local timerSoulreaper				= mod:NewTargetTimer(5.1, 69409, nil, "Tank|Healer|TargetedCooldown")
 local timerSoulreaperCD				= mod:NewCDCountTimer(30.5, 69409, nil, "Tank|Healer|TargetedCooldown", nil, 5, nil, DBM_COMMON_L.TANK_ICON)
-local timerDefileCD					= mod:NewCDCountTimer(32.5, 72762, nil, nil, nil, 3, nil, DBM_COMMON_L.DEADLY_ICON, true, 1, 4)
-local timerSummonValkyr				= mod:NewCDCountTimer(45, 69037, nil, nil, nil, 1, 71844, DBM_COMMON_L.DAMAGE_ICON, true, 2, 3)
+local timerDefileCD					= mod:NewCDCountTimer(32.5, 72762, nil, nil, nil, 3, nil, DBM_COMMON_L.DEADLY_ICON, nil, 1, 4)
+local timerSummonValkyr				= mod:NewCDCountTimer(45, 69037, nil, nil, nil, 1, 71844, DBM_COMMON_L.DAMAGE_ICON, nil, 2, 3)
 
 local soundDefileOnYou				= mod:NewSoundYou(72762)
 local soundSoulReaperSoon			= mod:NewSoundSoon(69409, nil, "Tank|Healer|TargetedCooldown")
@@ -172,6 +171,7 @@ local grabIcon = 2
 
 local warnedAchievement = false
 local lastPlague
+local defileCastTime = 0
 
 local function RemoveImmunes(self)
 	if self.Options.RemoveImmunes then
@@ -200,6 +200,11 @@ local function NextPhase(self, delay)
 	elseif self.vb.phase == 2 then
 		warnPhase2:Show()
 		warnPhase2:Play("ptwo")
+		timerNecroticPlagueCD:Cancel()
+		timerTrapCD:Cancel()
+		timerShamblingHorror:Cancel()
+		timerDrudgeGhouls:Cancel()
+		warnShamblingSoon:Cancel()
 		if self.Options.ShowFrame then
 			self:CreateFrame()
 		end
@@ -233,6 +238,15 @@ local function NextPhase(self, delay)
 	end
 end
 
+local bossCastStart, valkyrWave
+local bossCastNames = {}
+for _, id in ipairs({68981, 72262, 70358, 70498, 70541, 72762, 73539, 73654, 72350}) do
+	local name = GetSpellInfo(id)
+	if name then
+		bossCastNames[name] = true
+	end
+end
+
 local function RestoreWipeTime(self)
 	self:SetWipeTime(5)
 end
@@ -261,6 +275,7 @@ end
 
 function mod:DefileTarget(targetname, uId)
 	if not targetname and not uId then return end
+	if not self:AntiSpam(5, "defiletarget") then return end
 	if self.Options.DefileIcon then
 		self:SetIcon(targetname, 7, 4)
 	end
@@ -272,8 +287,8 @@ function mod:DefileTarget(targetname, uId)
 	elseif self:CheckNearby(11, targetname) then
 		specWarnDefileNear:Show(targetname)
 	end
-	warnDefileCast:Show(self.vb.defileCount, targetname, DBM.RangeCheck:GetDistance(uId))
-	if self.Options.DefileArrow then
+	warnDefileCast:Show(self.vb.defileCount, targetname, uId and DBM.RangeCheck:GetDistance(uId) or 0)
+	if self.Options.DefileArrow and uId then
 		local x, y = GetPlayerMapPosition(uId)
 			if x == 0 and y == 0 then
 				SetMapToCurrentZone()
@@ -285,6 +300,7 @@ end
 
 function mod:TrapTarget(targetname, uId)
 	if not targetname and not uId then return end
+	if not self:AntiSpam(5, "traptarget") then return end
 	if self.Options.TrapIcon then
 		self:SetIcon(targetname, 7, 4)
 	end
@@ -296,8 +312,8 @@ function mod:TrapTarget(targetname, uId)
 		specWarnTrapNear:Show(targetname)
 		specWarnTrapNear:Play("watchstep")
 	end
-	warnTrapCast:Show(targetname, DBM.RangeCheck:GetDistance(uId))
-	if self.Options.TrapArrow then
+	warnTrapCast:Show(targetname, uId and DBM.RangeCheck:GetDistance(uId) or 0)
+	if self.Options.TrapArrow and uId then
 		local x, y = GetPlayerMapPosition(uId)
 			if x == 0 and y == 0 then
 				SetMapToCurrentZone()
@@ -305,6 +321,55 @@ function mod:TrapTarget(targetname, uId)
 			end
 		DBM.Arrow:ShowRunAway(x, y, 10, 5)
 	end
+end
+
+local function scanBossTarget(self, method, tries)
+	for uId in DBM:GetGroupMembers() do
+		local bossUnit = uId.."target"
+		if self:GetUnitCreatureId(bossUnit) == 36597 then
+			local victim = bossUnit.."target"
+			if UnitExists(victim) and UnitIsPlayer(victim) then
+				local isTanking = UnitDetailedThreatSituation(victim, bossUnit)
+				if not isTanking then
+					local name = DBM:GetUnitFullName(victim)
+					self[method](self, name, DBM:GetRaidUnitId(name))
+					return
+				end
+			end
+			break
+		end
+	end
+	if tries > 1 then
+		self:Schedule(0.1, scanBossTarget, self, method, tries - 1)
+	end
+end
+
+function mod:ValkyrGrab(unitName, uId)
+	if not unitName or valkyrTargets[unitName] then return end
+	valkyrTargets[unitName] = true
+	valkyrGrabWarning:Show(uId and DBM:GetUnitRoleIcon(uId) or "", unitName, DBM:IconNumToTexture(grabIcon))
+	if uId then
+		local raidIndex = UnitInRaid(uId)
+		if raidIndex then
+			local name, _, subgroup, _, _, fileName = GetRaidRosterInfo(raidIndex + 1)
+			if name == unitName then
+				self:AddEntry(name, subgroup or 0, fileName, grabIcon)
+			end
+		end
+	end
+	if unitName == UnitName("player") then
+		specWarnYouAreValkd:Show()
+		specWarnYouAreValkd:Play("targetyou")
+	end
+	if DBM:IsInGroup() and self.Options.AnnounceValkGrabs and DBM:GetRaidRank() > 1 then
+		local channel = (IsInRaid() and "RAID") or "PARTY"
+		if self.Options.ValkyrIcon then
+			SendChatMessage(L.ValkGrabbedIcon:format(grabIcon, unitName), channel)
+		else
+			SendChatMessage(L.ValkGrabbed:format(unitName), channel)
+		end
+	end
+	grabIcon = grabIcon + 1
 end
 
 function mod:SPELL_CAST_START(args)
@@ -328,6 +393,21 @@ function mod:SPELL_CAST_START(args)
 
 	elseif args:IsSpellID(69242, 73800, 73801, 73802) then
 		timerSoulShriekCD:Start(args.sourceGUID)
+	elseif args:IsSpellID(68980, 74325, 74326, 74327) then
+		timerHarvestSoul:Start(args.destName)
+		timerHarvestSoulCD:Start()
+		if args:IsPlayer() then
+			specWarnHarvestSoul:Show()
+			specWarnHarvestSoul:Play("targetyou")
+		else
+			warnHarvestSoul:Show(args.destName)
+		end
+		if self.Options.HarvestSoulIcon then
+			self:SetIcon(args.destName, 5, 5)
+		end
+	end
+	if bossCastNames[args.spellName] then
+		bossCastStart(self, args.spellName)
 	end
 end
 
@@ -377,19 +457,15 @@ function mod:SPELL_CAST_SUCCESS(args)
 		if self.Options.RagingSpiritIcon then
 			self:SetIcon(args.destName, 6, 5)
 		end
-	elseif args:IsSpellID(68980, 74325, 74326, 74327) then
-		timerHarvestSoul:Start(args.destName)
-		timerHarvestSoulCD:Start()
-		if args:IsPlayer() then
-			specWarnHarvestSoul:Show()
-			specWarnHarvestSoul:Play("targetyou")
-		else
-			warnHarvestSoul:Show(args.destName)
-		end
-		if self.Options.HarvestSoulIcon then
-			self:SetIcon(args.destName, 5, 5)
-		end
-
+	elseif spellId == 72762 and args.destName then
+		self:DefileTarget(args.destName, DBM:GetRaidUnitId(args.destName))
+	elseif spellId == 73539 and args.destName then
+		self:TrapTarget(args.destName, DBM:GetRaidUnitId(args.destName))
+	elseif spellId == 74445 and args.destName then
+		self:ValkyrGrab(args.destName, DBM:GetRaidUnitId(args.destName))
+	end
+	if bossCastNames[args.spellName] then
+		bossCastStart(self, args.spellName)
 	end
 end
 
@@ -412,6 +488,9 @@ function mod:SPELL_AURA_APPLIED(args)
 		specWarnGTFO:Play("watchfeet")
 		soundDefileOnYou:Play("Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\defileOnYou.mp3")
 	end
+	if args:IsSpellID(72754, 73708, 73709, 73710) and args.destName and GetTime() - defileCastTime < 4 then
+		self:DefileTarget(args.destName, DBM:GetRaidUnitId(args.destName))
+	end
 end
 
 function mod:SPELL_AURA_APPLIED_DOSE(args)
@@ -430,6 +509,7 @@ end
 function mod:SPELL_SUMMON(args)
 	local spellId = args.spellId
 	if spellId == 69037 then
+		valkyrWave(self)
 		if self.Options.ShowFrame then
 			self:CreateFrame()
 		end
@@ -479,6 +559,12 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 		if self.Options.ShowFrame then
 			self:CreateFrame()
 		end
+	elseif msg == L.YellValkyr or msg:find(L.YellValkyr, 1, true) then
+		valkyrWave(self)
+	elseif msg == L.YellWinter or msg:find(L.YellWinter, 1, true) then
+		bossCastStart(self, GetSpellInfo(68981))
+	elseif msg == L.YellQuake or msg:find(L.YellQuake, 1, true) then
+		bossCastStart(self, GetSpellInfo(72262))
 	end
 end
 
@@ -516,29 +602,8 @@ function mod:UNIT_ENTERING_VEHICLE(uId)
 	local unitName = UnitName(uId)
 	DBM:Debug("UNIT_ENTERING_VEHICLE Val'kyr check for "..  unitName .. " (" .. uId .. "): UnitInVehicle is returning " .. (UnitInVehicle(uId) or "nil") .. " and UnitInRange is returning " .. (UnitInRange(uId) or "nil") .. " with distance: " .. DBM.RangeCheck:GetDistance(uId) .."yd. Checking if it is already cached: " .. (valkyrTargets[unitName] and "true" or "nil."), 3)
 
-	if UnitInVehicle(uId) and not valkyrTargets[unitName] then
-		valkyrGrabWarning:Show(DBM:GetUnitRoleIcon(uId), unitName, DBM:IconNumToTexture(grabIcon))
-		valkyrTargets[unitName] = true
-		local raidIndex = UnitInRaid(uId)
-		local name, _, subgroup, _, _, fileName = GetRaidRosterInfo(raidIndex + 1)
-		if name == unitName then
-			local grp = subgroup
-			local class = fileName
-			self:AddEntry(name, grp or 0, class, grabIcon)
-		end
-		if UnitIsUnit(uId, "player") then
-			specWarnYouAreValkd:Show()
-			specWarnYouAreValkd:Play("targetyou")
-		end
-		if DBM:IsInGroup() and self.Options.AnnounceValkGrabs and DBM:GetRaidRank() > 1 then
-			local channel = (IsInRaid() and "RAID") or "PARTY"
-			if self.Options.ValkyrIcon then
-				SendChatMessage(L.ValkGrabbedIcon:format(grabIcon, unitName), channel)
-			else
-				SendChatMessage(L.ValkGrabbed:format(unitName), channel)
-			end
-		end
-		grabIcon = grabIcon + 1
+	if UnitInVehicle(uId) then
+		self:ValkyrGrab(unitName, uId)
 	end
 end
 
@@ -551,7 +616,8 @@ function mod:UNIT_EXITING_VEHICLE(uId)
 	end
 end
 
-function mod:UNIT_SPELLCAST_START(_, spellName)
+bossCastStart = function(self, spellName)
+	if not self:AntiSpam(3, spellName) then return end
 	if spellName == GetSpellInfo(68981) then
 		self:SetStage(self.vb.phase + 0.5)
 		self.vb.ragingSpiritCount = 1
@@ -606,14 +672,17 @@ function mod:UNIT_SPELLCAST_START(_, spellName)
 		soundInfestSoon:Schedule(22.5-2, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\infestSoon.mp3")
 	elseif spellName == GetSpellInfo(72762) then
 		self.vb.defileCount = self.vb.defileCount + 1
-		self:BossTargetScanner(36597, "DefileTarget", 0.02, 15)
+		defileCastTime = GetTime()
+		self:Unschedule(scanBossTarget)
+		scanBossTarget(self, "DefileTarget", 18)
 		warnDefileSoon:Cancel()
 		warnDefileSoon:CancelVoice()
 		warnDefileSoon:Schedule(27, self.vb.defileCount+1)
 		warnDefileSoon:ScheduleVoice(27, "scatter")
 		timerDefileCD:Start(nil, self.vb.defileCount+1)
 	elseif spellName == GetSpellInfo(73539) then
-		self:BossTargetScanner(36597, "TrapTarget", 0.02, 10)
+		self:Unschedule(scanBossTarget)
+		scanBossTarget(self, "TrapTarget", 10)
 		timerTrapCD:Start()
 	elseif spellName == GetSpellInfo(73654) then
 		specWarnHarvestSouls:Show()
@@ -643,15 +712,28 @@ function mod:UNIT_SPELLCAST_START(_, spellName)
 	end
 end
 
-function mod:UNIT_SPELLCAST_SUCCEEDED(_, spellName)
+function mod:UNIT_SPELLCAST_START(_, spellName)
+	if bossCastNames[spellName] then
+		bossCastStart(self, spellName)
+	end
+end
 
+valkyrWave = function(self)
+	if not self:AntiSpam(5, "valkyr") then return end
+	table.wipe(valkyrTargets)
+	grabIcon = 2
+	self.vb.valkIcon = 2
+	self.vb.valkyrWaveCount = self.vb.valkyrWaveCount + 1
+	warnSummonValkyr:Show(self.vb.valkyrWaveCount)
+	timerSummonValkyr:Start(nil, self.vb.valkyrWaveCount+1)
+	if timerDefileCD:GetRemaining(self.vb.defileCount+1) < (self:IsDifficulty("normal25", "heroic25") and 5 or 4) then
+		timerDefileCD:Start(self:IsDifficulty("normal25", "heroic25") and 5 or 4, self.vb.defileCount+1)
+	end
+end
+
+function mod:UNIT_SPELLCAST_SUCCEEDED(_, spellName)
 	if spellName == GetSpellInfo(74361) or spellName == GetSpellInfo(69037) then
-		table.wipe(valkyrTargets)
-		grabIcon = 2
-		self.vb.valkIcon = 2
-		self.vb.valkyrWaveCount = self.vb.valkyrWaveCount + 1
-		warnSummonValkyr:Show(self.vb.valkyrWaveCount)
-		timerSummonValkyr:Start(nil, self.vb.valkyrWaveCount+1)
+		valkyrWave(self)
 	end
 end
 

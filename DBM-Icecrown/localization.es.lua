@@ -45,6 +45,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "¡Álzate y goza de tu verdadera forma!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "Barrera de maná",
 
 	setMissing				= "¡ATENCIÓN! El desequipamiento / equipamiento automático de armas de DBM no funcionará hasta que cree un equipamiento llamado pve",
@@ -95,7 +96,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "Poder de sangre",
 	PullAlliance		= "Por cada soldado de la Horda que matasteis... Por cada perro de la Alianza que cayó, el ejército del Rey Exánime creció. Ahora, hasta las Val'kyr alzan a los caídos para la Plaga.",
-	PullHorde			= "¡Kor'kron, vámonos! Campeones, vigilad vuestra retaguardia. La Plaga ha sido..."
+	PullHorde			= "¡Kor'kron, vámonos! Campeones, vigilad vuestra retaguardia. La Plaga ha sido...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -140,6 +142,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Profesor Putricidio"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -290,6 +296,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "¿Así que por fin ha llegado la elogiada justicia de la Luz? ¿Debería deponer la Agonía de Escarcha y confiar en tu piedad, Vadín?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "¿Me pregunto si de verdad os mueve la... rectitud?",
 	ValkGrabbedIcon			= "Una Val'kyr ha agarrado a %s {rt%d}",
 	ValkGrabbed				= "Una Val'kyr ha agarrado a %s",

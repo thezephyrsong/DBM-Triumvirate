@@ -45,6 +45,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "일어나라, 순수한 모습을 기뻐하라!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "마나 방벽",
 
 	setMissing				= "주목! DBM 자동 무기 해제/장착은 pve라는 장비 세트를 생성할 때까지 작동하지 않습니다.",
@@ -95,7 +96,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "피 마력",
 	PullAlliance		= "그러면 이동하자! 이동...",
-	PullHorde			= "코르크론, 출발하라! 용사들이여, 뒤를 조심하게. 스컬지는..."
+	PullHorde			= "코르크론, 출발하라! 용사들이여, 뒤를 조심하게. 스컬지는...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -140,6 +142,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "교수 퓨트리사이드"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -294,6 +300,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "그러니까 성스러운 빛이 자랑하던 정의가 마침내 왔다 이건가? 폴드링, 서리한을 내려놓고 자비라도 애걸하라는 건가?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "진정으로 정의에 이끌렸단 말이냐? 궁금하구나...",
 	ValkGrabbedIcon			= "발키리 납치 : {rt%d} %s",
 	ValkGrabbed				= "발키리 납치 : %s",

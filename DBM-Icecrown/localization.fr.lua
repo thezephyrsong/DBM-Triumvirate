@@ -45,6 +45,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "Lève-toi, dans l'exultation de cette nouvelle pureté",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "Barrière de mana",
 
 	setMissing				= "ATTENTION! DBM auto-déséquipement d'arme ne fonctionnera pas tant que vous n'aurez pas créer un set apellé pve",
@@ -95,7 +96,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "Bêtes de sang",
 	PullAlliance		= "Bon allez, on se bouge",
-	PullHorde			= "Kor'krons, en route ! Champions, surveillez bien vos arrières. Le Fléau a été -"
+	PullHorde			= "Kor'krons, en route ! Champions, surveillez bien vos arrières. Le Fléau a été -",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -141,6 +143,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Professeur Putricide"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -291,6 +297,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "Voici donc qu’arrive la fameuse justice de la Lumière ? Dois-je déposer Deuillegivre et me jeter à tes pieds en implorant pitié, Fordring ?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "Est-ce vraiment la justice qui vous anime ? Je me demande…",
 	ValkGrabbedIcon			= "Gardes de l'ombre val'kyr {rt%d} a pris %s",
 	ValkGrabbed				= "Gardes de l'ombre val'kyr a pris %s",

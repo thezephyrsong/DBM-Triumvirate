@@ -44,6 +44,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "起來，在純粹的形態中感受狂喜!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "法力屏障",
 
 	setMissing				= "注意力！ 在您創建名為 pve 的裝備集之前，DBM 自動武器卸載/裝備將不起作用，pve裝備集為全套裝備及武器",
@@ -94,7 +95,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "血魄威能",
 	PullAlliance		= "每個你殺死的部落士兵 -- 每條死去的聯盟狗，都讓巫妖王的軍隊隨之增長。此時此刻華爾琪都還在把你們倒下的同伴復活成天譴軍。",
-	PullHorde			= "柯爾克隆，前進!勇士們，要當心，天譴軍團已經..."
+	PullHorde			= "柯爾克隆，前進!勇士們，要當心，天譴軍團已經...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -139,6 +141,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "普崔希德教授"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -289,6 +295,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "聖光所謂的正義終於來了嗎?我是否該把霜之哀傷放下，祈求你的寬恕呢，弗丁?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "你們的原動力真的是正義感嗎?我很懷疑...",
 	ValkGrabbedIcon			= "華爾琪影衛{rt%d}抓住了%s",
 	ValkGrabbed				= "華爾琪影衛抓住了%s",

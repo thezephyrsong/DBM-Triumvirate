@@ -45,6 +45,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "Erhebt Euch und frohlocket ob Eurer reinen Form!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "Manabarriere",
 
 	setMissing				= "ACHTUNG! Das automatische Be-/Entwaffnen funktioniert erst, wenn Sie ein Ausrüstungsset namens *pve* erstellt haben",
@@ -95,7 +96,8 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	RunePower			= "Blutmacht",
 	PullAlliance		= "Mit jedem Krieger der Horde, den Ihr getötet habt, mit jedem dieser Allianzhunde, der fiel, wuchsen die Armeen des Lichkönigs. Selbst in diesem Moment erwecken die Val'kyr Eure Gefallenen als Diener der Geißel.",
-	PullHorde			= "Kor'kron, Aufbruch! Champions, gebt Acht. Die Geißel ist..."
+	PullHorde			= "Kor'kron, Aufbruch! Champions, gebt Acht. Die Geißel ist...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
 L = DBM:GetModLocalization("Festergut")
@@ -140,6 +142,10 @@ L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Professor Seuchenmord"
+})
+
+L:SetMiscLocalization({
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
 L = DBM:GetModLocalization("BPCouncil")
@@ -290,6 +296,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "Der vielgerühmte Streiter des Lichts ist endlich hier? Soll ich Frostgram niederlegen und mich Eurer Gnade ausliefern, Fordring?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "Ist es wirklich Rechtschaffenheit, die Euch treibt? Ich bin mir nicht sicher…",
 	ValkGrabbedIcon			= "Schattenwächterin der Val'kyr {rt%d} hat %s gegriffen",
 	ValkGrabbed				= "Schattenwächterin der Val'kyr hat %s gegriffen",

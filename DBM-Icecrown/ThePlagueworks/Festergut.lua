@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Festergut", "DBM-Icecrown", 2)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830100000")
 mod:SetCreatureID(36626)
 mod:RegisterCombat("combat")
 mod:SetUsedIcons(1, 2, 3)
@@ -9,7 +9,7 @@ mod:SetHotfixNoticeRev(20230627000000)
 mod:SetMinSyncRevision(20230627000000)
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 69195 71219 73031 73032",
+	"SPELL_CAST_START 69195 71219 73031 73032 69165",
 	"SPELL_CAST_SUCCESS 69278 71221 69240 71218 73019 73020 72296",
 	"SPELL_AURA_APPLIED 69279 69166 71912 72219 72551 72552 72553 69240 71218 73019 73020 69291 72101 72102 72103",
 	"SPELL_AURA_APPLIED_DOSE 69166 71912 72219 72551 72552 72553 69291 72101 72102 72103",
@@ -72,6 +72,7 @@ local function warnVileGasTargets()
 end
 
 function mod:OnCombatStart(delay)
+	self.vb.inhaleCount = 0
 	berserkTimer:Start(-delay)
 	timerInhaledBlight:Start(25-delay)
 	timerGasSporeCD:Start(20-delay)
@@ -96,7 +97,16 @@ function mod:OnCombatEnd()
 end
 
 function mod:SPELL_CAST_START(args)
-	if args:IsSpellID(69195, 71219, 73031, 73032) then
+	if args.spellId == 69165 then
+		self.vb.inhaleCount = (self.vb.inhaleCount or 0) + 1
+		if self.vb.inhaleCount >= 3 then
+			timerInhaledBlight:Cancel()
+			timerPungentBlight:Start()
+		else
+			timerInhaledBlight:Start()
+		end
+	elseif args:IsSpellID(69195, 71219, 73031, 73032) then
+		self.vb.inhaleCount = 0
 		specWarnPungentBlight:Show()
 		specWarnPungentBlight:Play("aesoon")
 		timerGasSporeCD:Start(20)
@@ -144,10 +154,6 @@ function mod:SPELL_AURA_APPLIED(args)
 		if amount >= 3 then
 			specWarnInhaled3:Show(amount)
 			specWarnInhaled3:Play("defensive")
-			timerPungentBlight:Start()
-			timerInhaledBlight:Cancel()
-		else
-			timerInhaledBlight:Start()
 		end
 	elseif args:IsSpellID(72219, 72551, 72552, 72553) then
 		local amount = args.amount or 1

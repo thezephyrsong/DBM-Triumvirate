@@ -3,7 +3,7 @@ local L		= mod:GetLocalizedStrings()
 
 local GetTime = GetTime
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830100000")
 mod:SetCreatureID(36678)
 mod:SetUsedIcons(1, 2, 3, 4)
 mod:SetHotfixNoticeRev(20230823000000)
@@ -18,7 +18,8 @@ mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED_DOSE 72451 72463 72671 72672 70542",
 	"SPELL_AURA_REFRESH 70539 72457 72875 72876 70542",
 	"SPELL_AURA_REMOVED 70447 72836 72837 72838 70672 72455 72832 72833 72855 72856 70911 71615 70539 72457 72875 72876 70542",
-	"UNIT_HEALTH boss1"
+	"UNIT_HEALTH boss1",
+	"CHAT_MSG_MONSTER_YELL"
 )
 
 local berserkTimer					= mod:NewBerserkTimer(600)
@@ -167,6 +168,13 @@ local function StartTransition(self)
 		timerChokingGasBombCD:Start(35+delay)
 		soundChokingGasSoon:Schedule(35+delay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
 		warnChokingGasBombSoon:Schedule(35+delay-5)
+	end
+end
+
+function mod:CHAT_MSG_MONSTER_YELL(msg)
+	if (msg == L.YellTransitionHeroic or msg:find(L.YellTransitionHeroic, 1, true)) and self:IsHeroic() then
+		warnVolatileExperiment:Show()
+		StartTransition(self)
 	end
 end
 

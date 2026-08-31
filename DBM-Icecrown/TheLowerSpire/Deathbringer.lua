@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Deathbringer", "DBM-Icecrown", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260830000000")
 mod:SetCreatureID(37813)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
 mod:SetMinSyncRevision(20220905000000)
@@ -90,22 +90,28 @@ do
 	end
 end
 
+local function StartPullTimers(self, delay)
+	enrageTimer:Cancel()
+	if self:IsNormal() then
+		enrageTimer:Start(-delay)
+	else
+		enrageTimer:Start(360-delay)
+	end
+	warnAddsSoon:Cancel()
+	timerCallBloodBeast:Start(30-delay)
+	warnAddsSoon:Schedule(20-delay)
+	timerBloodNova:Start(17-delay)
+	timerRuneofBlood:Start(20-delay)
+	timerBoilingBlood:Start(15.5-delay)
+end
+
 function mod:OnCombatStart(delay)
 	if self.Options.RunePowerFrame then
 		DBM.BossHealth:Show(L.name)
 		DBM.BossHealth:AddBoss(37813, L.name)
 		self:ScheduleMethod(0.5, "CreateBossRPFrame")
 	end
-	if self:IsNormal() then
-		enrageTimer:Start(-delay)
-	else
-		enrageTimer:Start(360-delay)
-	end
-	timerCallBloodBeast:Start(30-delay)
-	warnAddsSoon:Schedule(20-delay)
-	timerBloodNova:Start(17-delay)
-	timerRuneofBlood:Start(-delay)
-	timerBoilingBlood:Start(15.5-delay)
+	StartPullTimers(self, delay)
 	self.vb.warned_preFrenzy = false
 	self.vb.boilingBloodIcon = 1
 	self.vb.beastIcon = 8
@@ -231,6 +237,12 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 		timerCombatStart:Start(98.72)
 		if self.Options.RangeFrame then
 			DBM.RangeCheck:Show(12)
+		end
+	elseif msg:find(L.YellAggro, 1, true) then
+		if not self:IsInCombat() then
+			DBM:StartCombat(self, 0)
+		else
+			StartPullTimers(self, 0)
 		end
 	end
 end
