@@ -1,8 +1,4 @@
-------------------------------------------------------------------------
--- SpecializedAbsorbs
-------------------------------------------------------------------------
-
-local MAJOR, MINOR = "SpecializedAbsorbs-1.0", 4
+local MAJOR, MINOR = "SpecializedAbsorbs-1.0", 5
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 local Core
@@ -20,10 +16,6 @@ local GetNumRaidMembers, GetNumPartyMembers = GetNumRaidMembers, GetNumPartyMemb
 lib.CheckFlags = lib.CheckFlags or true
 lib.NoErrors = lib.NoErrors or true
 
----------------------
--- Install/Upgrade --
----------------------
--- We have to upgrade from a previous version
 if oldminor then
 	Core = lib.Core
 	if lib.Enabled then
@@ -42,124 +34,59 @@ else
 	LibStub("AceSerializer-3.0"):Embed(Core)
 end
 
----------------------
--- Local Variables --
----------------------
-
 local callbacks = Core.callbacks
 local Events = Core.Events
 
 local playerid, playerclass
 
--- Specifies the channel any AddOn message should be
--- sent to, nil if silent
--- Can also be used to get the last known party state
 local curChatChannel = nil
 
--- Hold the group type and number of members
 local groupCount = 0
 
--- Always hold the timestamp from the last COMBAT_LOG_EVENT_UNFILTERED fired
 local lastCombatLogEvent = 0.0
 
--- Table of all active absorb effects indexed by GUID and then spellid
--- at spellid == -1 there is a numeric entry with the total remaining value,
--- at spellid == -2 there is a numeric entry with the total quality (that is, the minimal quality)
--- The priority is also in this table for performance reasons during sort
--- [GUID] = { [spellid] = {spellid, priority, remainingValue, maxValue, quality, durationTimerHandle, extra} }
--- Shortcut to Core.activeEffects.bySpell
 local activeEffectsBySpell
 
--- Table of all active absorb effects indexed by GUID and then a list in the order in which
--- they will be used
--- Shortcut to Core.activeEffects.byPriority
 local activeEffectsByPriority
 
--- Table of all active area absorb effects indexed by triggerGUID
--- same format as an entry in activeEffectsBySpell with two extra fields at the end
--- {..., triggerGUID, refcount}
--- Note that in this approach, a trigger can have only one absorb effect up at the same time.
--- This should be a reasonable assumption for quite some time, considering only Anti-Magic Zone
--- and (soon) Power Word: Barrier use this feature anyway
--- Shortcut to Core.activeEffects.Area
 local activeAreaEffects
 
--- Table of current unit charges
--- A charge is a variant value a custom trigger can put on any unit with a limited lifetime
--- It is organized as a (very simple) queue (FIFO) for use with Divine Aegis e.g. to save the
--- critical heal value and then apply it on the aura gain or with Val'anyr.
--- [GUID] = { [spellid] = { charge1, charge2, ... } }
--- Shortcut to Core.activeCharges
 local activeCharges
 
--- Table of known spells that cause an absorb effects
--- priority: active effects above 2 are neither used in total value nor displayed (e.g. Anti-Magic Shell)
--- [spellid] = {priority, duration, createFunc, hitFunc}
--- Shortcut to Core.EffectInfo
 local Effects
 
--- Table of spells that cause an area effect
--- [spellid (trigger)] = spellid (absorb effect)
--- Shortcut to Core.AreaTriggers
 local AreaTriggers
 
--- Table of additional callbacks on combat log events for proc-based and other non-generic absorb effects.
--- Shortcuts to entries of Core.CombatTriggers
 local CombatTriggersOnHeal
 local CombatTriggersOnHealCrit
 local CombatTriggersOnAuraApplied
 local CombatTriggersOnAuraRemoved
 
--- Table of all unit stats relevant to absorb effects like attack power and spell power
--- (mastery rating later on)
--- [GUID] = { class, AttackPower, SpellPower, quality }
--- Shortcut to Core.UnitStats
 local UnitStatsTable
 
--- Table of all scaling factors to absorb effects like talents, items, set boni, buffs
--- If there is no mechanism in Cataclysm to obtain the correct absorb amount by any effect
--- this entries are meant to be distributed among a group, raid, etc
--- [GUID] = { [scaling_Name] = scaling_Value }
--- A numerical scaling_name above 10 should ONLY be used if it is the spellid of the affected effect,
--- since it is sometimes used as a very quick way to check for a unit's class
--- Scaling factors that are only relevant to the local user like priest talents and do not
--- need to be distributed but are needed for calculation of the public one's are private ones,
--- found at index -1
--- Shortcuts to Core.Scaling and its entries
 local Scaling
 local privateScaling
 local playerScaling
 
--- Table of all unitGUIDs that have a Heal Absorb spell effect, with shield amount as value
--- Health threshold until it gets fully absorbed
 local GUIDtoAbsorbHealSpells
 
--- Class-specific callbacks
 local OnEnableClass = {}
 local OnScalingDecode = setmetatable({}, {__index = function(table, class) return table.DEFAULT end})
 
--- Shortcut to the most important core functions
 local ApplySingularEffect
 local ApplyAreaEffect
 local CreateAreaTrigger
 local HitUnit
 local RemoveActiveEffect
 
--- Constants
 local LOW_VALUE_TOLERANCE = 50
 local ZONE_MODIFIER = 1
 
--- addon comm prefixes
 local COMM_UNITSTATS = "SpecializedAbsorbs_UnitStats"
 local COMM_SCALING = "SpecializedAbsorbs_Scaling"
 
--- for players using AbsorbsMonitor-1.0
 local COMM_UNITSTATS_ALT = "Absorbs_UnitStats"
 local COMM_SCALING_ALT = "Absorbs_Scaling"
-
-----------------------
--- Helper functions --
-----------------------
 
 local CommStatsCooldown = false
 local function ClearCommStatsCooldown()
@@ -198,7 +125,7 @@ do
 	local warlock_sacrifice = {7812, 19438, 19440, 19441, 19442, 19443, 27273, 47985, 47986}
 
 	function SortEffects(a, b)
-		-- use timestamp in case of the same id
+
 		if a[1] == b[1] then
 			if a[8] == nil then
 				return true
@@ -209,7 +136,6 @@ do
 			end
 		end
 
-		-- Twin Val'kyr
 		if a[1] == 65686 then
 			return true
 		end
@@ -223,7 +149,6 @@ do
 			return false
 		end
 
-		-- Frost Ward
 		if tContains(mage_frost_ward, a[1]) then
 			return true
 		end
@@ -231,7 +156,6 @@ do
 			return false
 		end
 
-		-- Fire Ward
 		if tContains(mage_fire_ward, a[1]) then
 			return true
 		end
@@ -239,7 +163,6 @@ do
 			return false
 		end
 
-		-- Shadow Ward
 		if tContains(warlock_shadow_ward, a[1]) then
 			return true
 		end
@@ -247,7 +170,6 @@ do
 			return false
 		end
 
-		-- Sacred Shield
 		if a[1] == 58597 then
 			return true
 		end
@@ -255,7 +177,6 @@ do
 			return false
 		end
 
-		-- Fel Blossom
 		if a[1] == 58597 then
 			return true
 		end
@@ -263,7 +184,6 @@ do
 			return false
 		end
 
-		-- Divine Aegis
 		if a[1] == 47753 then
 			return true
 		end
@@ -271,7 +191,6 @@ do
 			return false
 		end
 
-		-- Ice Barrier
 		if tContains(mage_ice_barrier, a[1]) then
 			return true
 		end
@@ -279,7 +198,6 @@ do
 			return false
 		end
 
-		-- Sacrifice
 		if tContains(warlock_sacrifice, a[1]) then
 			return true
 		end
@@ -287,19 +205,10 @@ do
 			return false
 		end
 
-		-- same priority
-		-- if a[2] == b[2] then
-		-- 	return (a[3] < b[3])
-		-- elseif a[2] and a[2] then
-		-- 	return (a[3] > b[3])
-		-- end
-
-		-- latest.
 		return (a[7] < b[7])
 	end
 end
 
--- Tries to get a working unitId
 local function GetUnitId(guid, name)
 	if name and UnitGUID(name) then
 		return name
@@ -311,7 +220,6 @@ local function GetUnitId(guid, name)
 		return "focus"
 	end
 
-	-- group
 	local prefix
 	if curChatChannel == "BATTLEGROUND" or curChatChannel == "RAID" then
 		prefix = "raid"
@@ -332,7 +240,7 @@ local function GetUnitId(guid, name)
 			end
 		end
 	end
-	-- solo
+
 	if UnitGUID("player") == guid then
 		return "player"
 	end
@@ -341,7 +249,6 @@ local function GetUnitId(guid, name)
 	end
 end
 
--- Tries to get a working unitId and calls the given UnitXXX() function
 local function UnitDispatch(func, guid, name)
 	local result = func(name)
 	if not result then
@@ -352,10 +259,6 @@ local function UnitDispatch(func, guid, name)
 	end
 	return result
 end
-
---------------------
--- Core functions --
---------------------
 
 function Core.Error(...)
 	if lib.NoErrors then return end
@@ -414,7 +317,6 @@ function Core.Enable()
 
 	Events.STATS_CHANGED()
 
-	-- This has to happen before class init, else we get no initial scaling broadcast
 	if not Core.Silent then
 		Core.SetVerbose()
 	end
@@ -454,9 +356,6 @@ function Core.Enable()
 	lib.Enabled = true
 end
 
--- These function has to clear any memory this version of the library may
--- have accumulated. It will be called in case this library version gets
--- replaced by a new one
 function Core.Disable()
 	for guid, effects in pairs(activeEffectsBySpell) do
 		callbacks:Fire("UnitCleared", guid)
@@ -511,16 +410,15 @@ function Core.ApplySingularEffect(timestamp, srcGUID, srcName, dstGUID, dstName,
 	local value, quality = effectInfo[3](srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	if value == nil then return end
 
-	-- No entry yet for this unit
 	if not destEffects then
-		-- Not this specific effect yet
+
 		effectEntry = {spellid, effectInfo[1], value, value, quality, 0, timestamp}
 		destEffects = {[-1] = 0, [-2] = 1.0, [spellid] = effectEntry}
 		activeEffectsBySpell[dstGUID] = destEffects
 		activeEffectsByPriority[dstGUID] = {effectEntry}
 		callbacks:Fire("EffectApplied", srcGUID, srcName, dstGUID, dstName, spellid, spellschool, value, quality, effectInfo[2])
 	elseif not destEffects[spellid] then
-		-- Effect exists already
+
 		effectEntry = {spellid, effectInfo[1], value, value, quality, 0, timestamp}
 		destEffects[spellid] = effectEntry
 		tinsert(activeEffectsByPriority[dstGUID], effectEntry)
@@ -538,10 +436,8 @@ function Core.ApplySingularEffect(timestamp, srcGUID, srcName, dstGUID, dstName,
 		tsort(activeEffectsByPriority[dstGUID], SortEffects)
 		callbacks:Fire("EffectUpdated", dstGUID, spellid, value, quality, effectInfo[2])
 
-		-- Adjust value in case this is a visible absorb to get the difference
 		value = value - prevAmount
 
-		-- Cancel the exting duration timeout timer
 		Core:CancelTimer(effectEntry[6], true)
 	end
 
@@ -555,9 +451,7 @@ function Core.ApplySingularEffect(timestamp, srcGUID, srcName, dstGUID, dstName,
 	end
 
 	if effectInfo[2] then
-		-- We add a 5s grace period for latency and all kind of stuff
-		-- This duration timeout should only be needed if the unit moved out of combat log
-		-- reporting range anyway
+
 		effectEntry[6] = Core:ScheduleTimer(Events.OnSingularTimeout, effectInfo[2] + 5, {dstGUID, spellid})
 	else
 		effectEntry[6] = Core:ScheduleRepeatingTimer(Events.OnSingularActivityCheck, 8, {dstGUID, spellid})
@@ -573,10 +467,7 @@ function Core.ApplyAreaEffect(timestamp, triggerGUID, triggerName, dstGUID, dstN
 	local destEffects = activeEffectsBySpell[dstGUID]
 
 	if not destEffects then
-		-- At the moment it is impossible for such an effect to be refreshed
-		-- Since it is created by a summoned unit radiating it, it either
-		-- gets removed/reapplied or removed/applied by a different unit.
-		-- Quality of 1.1 to enforce message
+
 		destEffects = {[-1] = 0, [-2] = 1.1}
 
 		activeEffectsBySpell[dstGUID] = destEffects
@@ -587,20 +478,14 @@ function Core.ApplyAreaEffect(timestamp, triggerGUID, triggerName, dstGUID, dstN
 	end
 
 	destEffects[spellid] = effectEntry
-	effectEntry[9] = effectEntry[9] + 1 -- increase refcount
+	effectEntry[9] = effectEntry[9] + 1
 
-	-- While we keep the trigger itself as a normal afflicted unit to keep
-	-- track when the area effect breaks, we do not broadcast it nor have to
-	-- keep a sorted priority list
 	if triggerGUID ~= dstGUID then
 		tinsert(activeEffectsByPriority[dstGUID], effectEntry)
 		tsort(activeEffectsByPriority[dstGUID], SortEffects)
 
-		-- Note that we CANNOT use nil as an amount, since external addons can rely on this value being non-nil
-		-- for sorting. We're using -1 here that usually represents infinite values
 		callbacks:Fire("EffectApplied", triggerGUID, triggerName, dstGUID, dstName, spellid, spellschool, -1, effectEntry[5], nil)
 
-		-- Update quality if needed
 		if effectEntry[5] < destEffects[-2] then
 			destEffects[-2] = effectEntry[5]
 			callbacks:Fire("UnitUpdated", dstGUID, destEffects[-1], destEffects[-2])
@@ -636,35 +521,27 @@ function Core.HitUnit(guid, absorbedTotal, overkill, spellschool)
 	local i = 1
 	local effectEntry
 
-	-- This loop lasts as long as there is still an absorb value that
-	-- no effect could account for, but it will break once the list of
-	-- available effects got used completely.
 	while absorbedRemaining > 0 do
 		effectEntry = activeEffectsByPriority[guid][i]
 
-		-- Sometimes there can be holes in this list since we don't re-sort
-		-- after removing an effect
 		if effectEntry == nil then break end
 
-		-- Only absorb effects with exactly zero are ignored, negative ones
-		-- are treated as infinite (that is, no addon should display their value)
 		if effectEntry[3] ~= 0 then
-			-- Hit the abosrb effect
+
 			absorbed, keepEffect = Effects[effectEntry[1]][4](effectEntry, absorbedRemaining, overkill, spellschool)
 
 			if absorbed > 0 then
-				-- Reduce the value of this effect and the remaining absorb value
-				-- to be accounted for
+
 				effectEntry[3] = effectEntry[3] - absorbed
 				absorbedRemaining = absorbedRemaining - absorbed
 
 				if effectEntry[8] then
 					Fire(callbacks, "AreaUpdated", effectEntry[8], effectEntry[3])
 				else
-					-- If it should be visible (priority < 2), correct the total value
+
 					if effectEntry[2] < 2 then
 						guidEffects[-1] = guidEffects[-1] - absorbed
-						-- Shows us that at least one visible effect got hit
+
 						visibleAbsorb = true
 					end
 
@@ -672,11 +549,6 @@ function Core.HitUnit(guid, absorbedTotal, overkill, spellschool)
 				end
 			end
 
-			-- If the hit-function told us to remove the effect, do so
-			-- Note that only RemoveActiveEffect is allowed to remove it from the
-			-- list, we just set the value to zero, so it gets ignored on any hit.
-			-- This is do not come into any desync issues with the events, and to
-			-- keep the proper clean-up code in one place
 			if not keepEffect then
 				effectEntry[3] = 0
 			end
@@ -685,22 +557,6 @@ function Core.HitUnit(guid, absorbedTotal, overkill, spellschool)
 		i = i + 1
 	end
 
-	-- There are two possibilities when things are going wrong
-	--
-	--	a)	we guessed an absorb value too high, in that case it will
-	--		automatically be corrected when it breaks
-	--
-	--	b)	we guessed an absorb value too low, so we end up with an
-	--		amount to absorb when all effects seem to be gone
-	--		(absorbedRemaining > 0)
-	--		Note that we cannot rely on SPELL_AURA_REMOVED to check this,
-	--		since it may happen completely out of order, but it will
-	--		clear this unit soon or did so already.
-	--		we reduce the quality to zero, since any absorb now happening
-	--		cannot be accounted for.
-	--		Since we may have rounding errors from scanning the spellbook
-	--		and calculating the value thereafter (does Blizzard round on
-	--		EVERY step?!?), we accept a small threshold
 	if absorbedRemaining > LOW_VALUE_TOLERANCE then
 		guidEffects[-1] = guidEffects[-1] - absorbedRemaining
 		guidEffects[-2] = 0.0
@@ -713,15 +569,12 @@ function Core.HitUnit(guid, absorbedTotal, overkill, spellschool)
 	end
 end
 
--- Note that this method should NOT be called on non-existing effects or units
--- There are no exist checks within it.
 function Core.RemoveActiveEffect(guid, spellid)
 	local guidEffects = activeEffectsBySpell and activeEffectsBySpell[guid]
 	if not guidEffects then return end
 
 	local effectEntry = guidEffects[spellid]
 
-	-- This is a shared effect with a triggerGUID
 	if effectEntry[8] then
 		effectEntry[9] = effectEntry[9] - 1
 
@@ -761,10 +614,6 @@ function Core.RemoveActiveEffect(guid, spellid)
 	end
 end
 
--- This is uses a _very_ simple queue implementation with tinsert and tremove.
--- It will not scale very well for large values, but we're talking of a maximum
--- of ~3 entries per GUID at any given time. A proper implementation
--- with linked list would probably not be any faster.
 function Core.PushCharge(guid, spellid, amount, lifetime)
 	local guidCharges = activeCharges[guid]
 
@@ -784,15 +633,12 @@ function Core.PopCharge(guid, spellid)
 	if guidCharges then
 		local queue = guidCharges[spellid]
 
-		-- For some weird reason, it will fail (true even on empty array)
-		-- if checked for queue[1] ?!?
 		if queue and queue[2] then
 			local chargeAmount
 			local chargeExpire
 
-			-- This loop will not be able to run infinitely
 			while true do
-				-- In this order we might save one table reshuffle
+
 				chargeAmount = tremove(queue, 2)
 				if not chargeAmount then return 0 end
 
@@ -816,9 +662,8 @@ function Core.AddCombatTrigger(target, event, func)
 		local listIndex = target .. "_list"
 		local funcList = eventTriggers[listIndex]
 
-		-- There is already a list of callbacks, so we just add this one
 		if funcList then
-			-- We used a direct call so far, create a list and set up a handler
+
 			for k, v in pairs(funcList) do
 				if v == func then
 					return
@@ -850,15 +695,13 @@ function Core.RemoveCombatTrigger(target, event, func)
 	local listIndex = target .. "_list"
 	local funcList = eventTriggers[listIndex]
 
-	-- We have a list of callbacks, reduce if possible
 	if (funcList) then
-		-- It was a direct call anyway
+
 		if (#funcList == 2) then
 			eventTriggers[target] = (funcList[1] == func) and funcList[2] or funcList[1]
 			eventTriggers[listIndex] = nil
 		else
-			-- ATTENTION: We have to keep the table in place
-			-- because the handler references this table
+
 			local old_funcList = DeepTableCopy(funcList)
 			wipe(funcList)
 
@@ -898,8 +741,6 @@ function Core.SendScaling()
 	end
 end
 
--- An extension of AceTimer to schedule a one-shot timer that will not
--- be scheduled twice if scheduled again before it's fired.
 local activeTimers = {}
 function Core:ScheduleUniqueTimer(id, callback, delay, arg)
 	if not activeTimers[id] then
@@ -941,10 +782,6 @@ CreateAreaTrigger = Core.CreateAreaTrigger
 HitUnit = Core.HitUnit
 RemoveActiveEffect = Core.RemoveActiveEffect
 
----------------------
--- Event functions --
----------------------
-
 function Events.PLAYER_ENTERING_WORLD()
 	if not GetTalentInfo(1, 1) then
 		Core.RegisterEvent("PLAYER_ALIVE")
@@ -967,21 +804,17 @@ local function CheckFlags(srcFlags, dstFlags)
 	return (srcFlags and bit.band(srcFlags, BITMASK_GROUP) ~= 0) or (dstFlags and bit.band(dstFlags, BITMASK_GROUP) ~= 0)
 end
 
-------------------
--- Heal Absorbs --
-------------------
-
 local absorbHealSpells = {
-	[66237] = 30000,	-- Incinerate Flesh (10 Normal)
-	[67049] = 60000,	-- Incinerate Flesh (25 Normal)
-	[67050] = 40000,	-- Incinerate Flesh (10 Heroic)
-	[67051] = 85000,	-- Incinerate Flesh (25 Heroic)
-	[66236] = 30000,	-- Incinerate Flesh
-	[70659] = 9000,		-- Necrotic Strike (10 Normal)
-	[71951] = 15000,	-- Necrotic Strike
-	[72490] = 14000,	-- Necrotic Strike (25 Normal)
-	[72491] = 14000,	-- Necrotic Strike (10 Heroic)
-	[72492] = 20000,	-- Necrotic Strike (25 Heroic)
+	[66237] = 30000,
+	[67049] = 60000,
+	[67050] = 40000,
+	[67051] = 85000,
+	[66236] = 30000,
+	[70659] = 9000,
+	[71951] = 15000,
+	[72490] = 14000,
+	[72491] = 14000,
+	[72492] = 20000,
 }
 
 local environmentSchools = {
@@ -1065,7 +898,7 @@ function Events.COMBAT_LOG_EVENT_UNFILTERED(timestamp, etype, srcGUID, srcName, 
 end
 
 function Events.GROUPING_CHANGED()
-	-- Note that the order here is VERY important
+
 	if UnitInBattleground("player") then
 		curChatChannel = "BATTLEGROUND"
 		groupCount = GetNumRaidMembers()
@@ -1104,7 +937,7 @@ function Events.STATS_CHANGED()
 	local baseAP, plusAP, minusAP = UnitAttackPower("player")
 
 	UnitStatsTable[playerid][2] = baseAP + plusAP - minusAP
-	-- TODO: What about spell power ~= healing spell power?
+
 	UnitStatsTable[playerid][3] = GetSpellBonusHealing()
 	if curChatChannel then
 		Core:ScheduleUniqueTimer("comm_stats", Core.SendUnitStats, CommStatsCooldown and 15 or 5)
@@ -1116,7 +949,7 @@ function Events.OnUnitStatsReceived(prefix, text, distribution, target)
 	if not text then return end
 
 	local success, guid, class, ap, sp = Core:Deserialize(text)
-	if not (success and guid and class and ap and sp) then return end
+	if not (success and type(guid) == "string" and type(class) == "string" and type(ap) == "number" and type(sp) == "number") then return end
 	if guid == playerid then return end
 
 	if not UnitStatsTable[guid] then
@@ -1140,7 +973,7 @@ function Events.OnScalingReceived(prefix, text, distribution, target)
 	if not text then return end
 
 	local success, guid, class, inScaling = Core:Deserialize(text)
-	if not (success and guid and class and inScaling) then return end
+	if not (success and type(guid) == "string" and type(class) == "string" and type(inScaling) == "table") then return end
 	if guid == playerid then return end
 	(OnScalingDecode[class])(guid, inScaling)
 end
@@ -1173,7 +1006,6 @@ function Events.OnSingularActivityCheck(args)
 	if activeEffectsBySpell[guid] and activeEffectsBySpell[guid][spellid] then
 		local name = select(6, GetPlayerInfoByGUID(guid))
 
-		-- We cannot track whether it's still on, remove it
 		if not name then
 			Core:CancelTimer(activeEffectsBySpell[guid][spellid][6])
 			RemoveActiveEffect(guid, spellid)
@@ -1195,14 +1027,13 @@ function Events.OnSingularActivityCheck(args)
 			RemoveActiveEffect(guid, spellid)
 		end
 	else
-		-- Make sure to remove the timer
+
 		Core:CancelTimer(activeEffectsBySpell[guid][spellid][6])
 	end
 end
 
--- This should be called in even less cases than the normal timeout
 function Events.OnAreaTimeout(areaEntry)
-	-- Disable the timer handle entry already
+
 	areaEntry[6] = nil
 
 	for guid, guidEffects in pairs(activeEffectsBySpell) do
@@ -1214,19 +1045,13 @@ function Events.OnAreaTimeout(areaEntry)
 		end
 	end
 
-	-- We're only here if we didn't reduce the refcount to zero
 	Core.Error("Positive refcount " .. areaEntry[9] .. " remained for area effect " .. areaEntry[1] .. " by trigger " .. areaEntry[8])
 end
 
--- Map client events to our callbacks
 Events.PARTY_MEMBERS_CHANGED = Events.GROUPING_CHANGED
 Events.RAID_ROSTER_UPDATE = Events.GROUPING_CHANGED
 Events.PLAYER_DAMAGE_DONE_MODS = Events.STATS_CHANGED
 Events.UNIT_ATTACK_POWER = Events.STATS_CHANGED
-
-----------------------
--- Public functions --
-----------------------
 
 function lib.RegisterEffectCallbacks(self, funcApplied, funcUpdated, funcRemoved)
 	lib.RegisterCallback(self, "EffectApplied", funcApplied)
@@ -1322,8 +1147,6 @@ function lib.UnitScaling(guid, defaultScaling, defaultQuality)
 	return defaultScaling, defaultQuality
 end
 
--- Optimized method to save one function call on creation, since a lot of spells
--- actually require stats and scaling
 function lib.UnitStatsAndScaling(guid, missingQuality, defaultScaling, defaultQuality)
 	local guidStats = UnitStatsTable and UnitStatsTable[guid]
 	local guidScaling = Scaling and Scaling[guid]
@@ -1366,57 +1189,28 @@ function lib.UnitTotalHealAbsorbs(guid)
 	end
 end
 
-------------------------------
--- Generic Effect functions --
-------------------------------
-
 local PushCharge = Core.PushCharge
 local PopCharge = Core.PopCharge
 local UnitStats = lib.UnitStats
 local UnitScaling = lib.UnitScaling
 local UnitStatsAndScaling = lib.UnitStatsAndScaling
 
---- Generic Create function (only for documentary purposes)
--- @param	srcGUID			guid of the originating unit
--- @param	srcName			name of the originating unit
--- @param	dstGUID			guid of the affected unit
--- @param	dstName			name of the affected unit
--- @param	spellid				the spellid of this absorb effect
--- @param	destEffects			activeEffectsBySpell[dstGUID]
--- @return	total value of this absorb effect
--- @return	quality (that is accuracy) of this value
 local function generic_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 end
 
--- Generic Create function for constant effects pulled from a table
--- Expects the table at effect[5] indexed by spellid with base values
 local function generic_ConstantByTable_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	return Effects[spellid][5][spellid], 1.0
 end
 
--- Generic Create function for effects simply scaling with spellpower and a fixed
--- coefficient.
--- Expects at effect[5] a table indexed by spellid with the base values and at
--- effect[6] the spellpower coefficient
 local function generic_SpellScalingByTable_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	local effectInfo = Effects[spellid]
 	local _, sp, quality = UnitStats(srcGUID, 0.1)
 	return floor(effectInfo[5][spellid] + (sp * effectInfo[6])), quality
 end
 
---- Generic Hit function suitable for most absorb effects
--- Note that this function is only responsible for determining the amount this
--- particular absorb effect will take, NOT to handle its consequences like updating
--- the data structures
--- @param	effectEntry			activeEffectsBySpell[guid][spellid]
--- @param	absorbedRemaining	absorb value left to be accounted for on this unit
--- @param	overkill			amount of damage done on top of the absorb
--- @param	spellschool			spell school for this hit
--- @return	absorb value this effect can account fors
--- @return	whether this absorb was broken by this hit
 local function generic_Hit(effectEntry, absorbedRemaining, overkill, spellschool)
 	if absorbedRemaining > effectEntry[3] then
-		-- dirty but efficient
+
 		absorbedRemaining = effectEntry[3]
 		overkill = 1
 	end
@@ -1479,13 +1273,8 @@ local function Arcane_Hit(effectEntry, absorbedRemaining, overkill, spellschool)
 	return generic_Hit(effectEntry, absorbedRemaining, overkill, spellschool)
 end
 
----------------------------
--- Effects: Death Knight --
----------------------------
-
 local deathknight_MS_Ranks = {[0] = 0, [1] = 0.08, [2] = 0.16, [3] = 0.25}
 
--- Public Scaling: { [MagicSuppression] }
 local deathknight_defaultScaling = {0}
 
 local function deathknight_AntiMagicShell_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
@@ -1499,7 +1288,7 @@ local function deathknight_AntiMagicShell_Create(srcGUID, srcName, dstGUID, dstN
 end
 
 local function deathknight_AntiMagicShell_Hit(effectEntry, absorbedRemaining, overkill, spellschool)
-	-- TODO: what happens to mixed school attacks?
+
 	if spellschool == SCHOOL_MASK_PHYSICAL then
 		return 0, true
 	end
@@ -1517,7 +1306,7 @@ local function deathknight_AntiMagicZone_Create(srcGUID, srcName, dstGUID, dstNa
 end
 
 local function deathknight_AntiMagicZone_Hit(effectEntry, absorbedRemaining, overkill, spellschool)
-	-- TODO: what happens to mixed school attacks?
+
 	if spellschool == SCHOOL_MASK_PHYSICAL then
 		return 0, true
 	end
@@ -1555,7 +1344,7 @@ local function deathknight_WoN_Hit3(effectEntry, absorbedRemaining, overkill, sp
 end
 
 local function deathknight_OnTalentUpdate()
-	-- Magic Suppression
+
 	local t = select(5, GetTalentInfo(3, 18))
 	playerScaling[1] = deathknight_MS_Ranks[t]
 	lib.ScheduleScalingBroadcast()
@@ -1566,32 +1355,21 @@ function OnEnableClass.DEATHKNIGHT()
 	deathknight_OnTalentUpdate()
 end
 
---------------------
--- Effects: Druid --
---------------------
-
 local function druid_SavageDefense_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	local ap, _, quality = UnitStats(srcGUID, 0.0)
 	return floor(ap * 0.25), quality
 end
 
 local function druid_SavageDefense_Hit(effectEntry, absorbedRemaining, overkill, spellschool)
-	-- TODO: what happens to mixed school attacks?
+
 	if spellschool == SCHOOL_MASK_PHYSICAL then
 		return min(effectEntry[3], absorbedRemaining), false
 	end
 	return 0, true
 end
 
--------------------
--- Effects: Mage --
--------------------
-
--- Table for base values of
--- Fire Ward, Frost Ward, Ice Barrier, Mana Shield
--- TODO: base leveling increase
 local mage_Absorb_Spells = {
-	-- Fire Ward
+
 	[543] = 165,
 	[8457] = 290,
 	[8458] = 470,
@@ -1599,7 +1377,7 @@ local mage_Absorb_Spells = {
 	[10225] = 875,
 	[27218] = 1125,
 	[43010] = 1950,
-	-- Frost Ward
+
 	[6143] = 165,
 	[8461] = 290,
 	[8462] = 470,
@@ -1607,7 +1385,7 @@ local mage_Absorb_Spells = {
 	[28609] = 875,
 	[32796] = 1125,
 	[43012] = 1950,
-	-- Ice Barrier
+
 	[11426] = 438,
 	[13031] = 549,
 	[13032] = 678,
@@ -1616,7 +1394,7 @@ local mage_Absorb_Spells = {
 	[33405] = 1075,
 	[43038] = 2800,
 	[43039] = 3300,
-	-- Mana Shield
+
 	[1463] = 120,
 	[8494] = 210,
 	[8495] = 300,
@@ -1628,10 +1406,8 @@ local mage_Absorb_Spells = {
 	[43020] = 1330
 }
 
--- Public Scaling: { [GlyphOfIceBarrier] }
 local mage_defaultScaling = {1.0}
 
--- No Downranking support here
 local function mage_IceBarrier_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	local _, sp, quality1, sourceScaling, quality2 = UnitStatsAndScaling(srcGUID, 0.3, mage_defaultScaling, 0.4)
 	return floor((mage_Absorb_Spells[spellid] + (sp * 0.8053)) * sourceScaling[1]), min(quality1, quality2)
@@ -1658,7 +1434,7 @@ local function mage_OnGlyphUpdated()
 
 	for i = 1, 6 do
 		glyphSpellId = select(3, GetGlyphSocketInfo(i))
-		-- Glyph of Ice Barrier
+
 		if glyphSpellId and glyphSpellId == 63095 then
 			playerScaling[1] = 1.3
 			break
@@ -1672,24 +1448,17 @@ function OnEnableClass.MAGE()
 	mage_OnGlyphUpdated()
 end
 
-----------------------
--- Effects: Paladin --
-----------------------
-
--- Public Scaling: { [DivineGuardian] }
 local paladin_defaultScaling = {1.0}
 
--- The base value is always 500
 local function paladin_SacredShield_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	local _, sp, quality1, sourceScaling, quality2 = UnitStatsAndScaling(srcGUID, 0.1, paladin_defaultScaling, 0.2)
 	return floor((500 + (sp * 0.75)) * (sourceScaling[1] or paladin_defaultScaling[1]) * ZONE_MODIFIER), min(quality1, quality2)
 end
 
 local function paladin_OnTalentUpdate()
-	-- No need to do it before
+
 	if UnitLevel("player") < 80 then return end
 
-	-- Divine Guardian
 	local t = select(5, GetTalentInfo(2, 9))
 	playerScaling[1] = 1 + (t * 0.1)
 	lib.ScheduleScalingBroadcast()
@@ -1700,13 +1469,8 @@ function OnEnableClass.PALADIN()
 	paladin_OnTalentUpdate()
 end
 
----------------------
--- Effects: Priest --
----------------------
-
 PRIEST_DIVINEAEGIS_SPELLID = 47753
 
--- [rank] = {spellid, level, baseValue, incValue}
 local priest_PWS_Ranks = {
 	[1] = {17, 6, 44, 4},
 	[2] = {592, 12, 88, 6},
@@ -1724,20 +1488,12 @@ local priest_PWS_Ranks = {
 	[14] = {48066, 80, 2230, 0}
 }
 
--- Public Scaling:
---   Power Word: Shield: [spellid] = {base, spFactor}
---   Divine Aegis: [47753] = healFactor
 local priest_defaultScaling = {[PRIEST_DIVINEAEGIS_SPELLID] = 0}
 do
 	for k, v in pairs(priest_PWS_Ranks) do
 		priest_defaultScaling[v[1]] = {v[3], 0.809}
 	end
 end
-
--- Private Scaling
---   Talents: "TwinDisc", "ImpPWS", "FocusedPower", "DivineAegis", "BorrowedTime", "SpiritualHealing"
---	 Gear: "4pcRaid9", "4pcRaid10"
---   Computed: base, sp, DA
 
 local function priest_PowerWordShield_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
 	local _, sp, quality1, sourceScaling, quality2 = UnitStatsAndScaling(srcGUID, 0.1, priest_defaultScaling, 0.1)
@@ -1771,19 +1527,8 @@ local function priest_DivineAegis_Create(srcGUID, srcName, dstGUID, dstName, spe
 	return min(destLevel * 125, existing + charge), quality
 end
 
--- I officially HATE Divine Aegis (and Val'anyr for that matter) from now.
--- After extensive testing and parsing/filtering a few hours of combat log, I found the following facts:
--- 	* In MOST cases, every critical heal will trigger an AURA_APPLIED/AURA_REFRESHED event, even on multiple crits on
---    one penance and with both AURA events being triggered after all critical heals. In rare cases, there is only one...
---	* If on your side the aura get removed before the next one is applied (double penance crit, both critical heals
---    are first in your combat log), then AURA_APPLIED -> AURA_REMOVED by damage -> AURA_APPLIED for 2nd crit
---	* There are occasions where 2 Discipline priests apply two Divine Aegis auras. In general, the source of Divine Aegis
---    is completely fucked up in those cases. If two priests channel penance at the same time, both crit, you can never say
---    who will get the AURA_APPLIED event credited (yes, I found both the first-hitting priest as well as the second-hitting
---    priest there!) and who the following AURA_REFRESHED events
 local function priest_DivineAegis_OnHealCrit(srcGUID, srcName, dstGUID, dstName, spellid, amount)
-	-- We can do a direct access to Scaling here, since the callback is only in place if it was present
-	-- in the first place
+
 	PushCharge(dstGUID, PRIEST_DIVINEAEGIS_SPELLID, floor(amount * Scaling[srcGUID][PRIEST_DIVINEAEGIS_SPELLID]), 5.0)
 end
 
@@ -1812,13 +1557,10 @@ local function priest_ApplyScaling(guid, level, baseFactor, spFactor, daFactor)
 			if level == 80 then
 				rankValue = v[3] + v[4]
 			else
-				-- TODO
+
 				rankValue = v[3]
 			end
 
-			-- Based on the assumption that the decrease in sp coefficient is linear,
-			-- only tested for level 80 though so far
-			-- Cataclysm will help us get rid of this crap again
 			if v[2] < (level - 5) then
 				if level == 80 then
 					rankSP = max(spFactor * ((v[2] * 0.045228921) - 2.381389768), 0)
@@ -1847,27 +1589,22 @@ local function priest_UpdatePlayerScaling()
 end
 
 local function priest_ScanTalents()
-	-- Twin Disciplines
+
 	local t = select(5, GetTalentInfo(1, 2))
 	privateScaling["TwinDisc"] = t
 
-	-- Improved Power Word: Shield
 	t = select(5, GetTalentInfo(1, 9))
 	privateScaling["ImpPWS"] = t
 
-	-- Focused Power
 	t = select(5, GetTalentInfo(1, 16))
 	privateScaling["FocusedPower"] = t
 
-	-- Divine Aegis
 	t = select(5, GetTalentInfo(1, 24))
 	privateScaling["DivineAegis"] = t
 
-	-- Borrowed Time
 	t = select(5, GetTalentInfo(1, 27))
 	privateScaling["BorrowedTime"] = t
 
-	-- Spiritual Healing
 	t = select(5, GetTalentInfo(2, 16))
 	privateScaling["SpiritualHealing"] = t
 end
@@ -1875,7 +1612,6 @@ end
 local function priest_ScanEquipment()
 	local n = 0
 
-	-- Crimson Acolyte Raiment's 4-piece Bonus
 	if IsEquippedItem(50765) or IsEquippedItem(51178) or IsEquippedItem(51261) then
 		n = 1
 	end
@@ -1895,7 +1631,6 @@ local function priest_ScanEquipment()
 	if n >= 4 then
 		privateScaling["4pcRaid10"] = 1
 
-		-- no way to have 4pcRaid9 now
 		privateScaling["4pcRaid9"] = 0
 		return
 	else
@@ -1904,9 +1639,6 @@ local function priest_ScanEquipment()
 
 	n = 0
 
-	-- Velen's/Zabra's Raiment 4-piece Bonus
-
-	-- UnitFactionGroup's first return value is NOT localized
 	if UnitFactionGroup("player") == "Alliance" then
 		if IsEquippedItem(47914) or IsEquippedItem(47984) or IsEquippedItem(48035) then
 			n = 1
@@ -1971,7 +1703,10 @@ local function priest_OnScalingEncode()
 end
 
 function OnScalingDecode.PRIEST(guid, in_guidScaling)
-	if #in_guidScaling ~= 4 then return end
+	if type(in_guidScaling) ~= "table" or #in_guidScaling ~= 4 then return end
+	for i = 1, 4 do
+		if type(in_guidScaling[i]) ~= "number" then return end
+	end
 	priest_ApplyScaling(guid, unpack(in_guidScaling))
 end
 
@@ -1986,12 +1721,6 @@ function OnEnableClass.PRIEST()
 	priest_UpdatePlayerScaling()
 end
 
----------------------
--- Effects: Shaman --
----------------------
-
--- Public Scaling: { [AstralShift] }
--- We default to 0.3, because quite frankly nobody will use less points except while leveling
 local shaman_defaultScaling = {0.3}
 
 local function shaman_AstralShift_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
@@ -2006,7 +1735,7 @@ local function shaman_AstralShift_Hit(effectEntry, absorbedRemaining, overkill, 
 end
 
 local function shaman_OnTalentUpdate()
-	-- Astral Shift
+
 	local t = select(5, GetTalentInfo(1, 21))
 	playerScaling[1] = t * 0.1
 	lib.ScheduleScalingBroadcast()
@@ -2017,11 +1746,6 @@ function OnEnableClass.SHAMAN()
 	shaman_OnTalentUpdate()
 end
 
-----------------------
--- Effects: Warlock --
-----------------------
-
--- TODO: base leveling increase
 local warlock_Sacrifice_Spells = {
 	[7812] = 305,
 	[19438] = 510,
@@ -2043,12 +1767,10 @@ local warlock_ShadowWard_Spells = {
 	[47891] = 3300
 }
 
--- Public Scaling: { [DemonicBrutality] }
 local warlock_defaultScaling = {1.0}
 
--- No downranking support here
 local function warlock_Sacrifice_Create(srcGUID, srcName, dstGUID, dstName, spellid, destEffects)
-	-- Note that the source is the voidwalker, so dest is the warlock!
+
 	local sourceScaling, quality = UnitScaling(dstGUID, warlock_defaultScaling, 0.4)
 	return floor(warlock_Sacrifice_Spells[spellid] * sourceScaling[1]), quality
 end
@@ -2061,7 +1783,7 @@ local function warlock_ShadowWard_Hit(effectEntry, absorbedRemaining, overkill, 
 end
 
 local function warlock_OnTalentUpdate()
-	-- Demonic Brutality
+
 	local t = select(5, GetTalentInfo(2, 6))
 	playerScaling[1] = 1 + (t * 0.1)
 	lib.ScheduleScalingBroadcast()
@@ -2071,10 +1793,6 @@ function OnEnableClass.WARLOCK()
 	Events.PLAYER_TALENT_UPDATE = warlock_OnTalentUpdate
 	warlock_OnTalentUpdate()
 end
-
---------------------
--- Effects: Items --
---------------------
 
 local function items_EssenceOfGossamer_Hit(effectEntry)
 	if effectEntry[3] < 140 then
@@ -2114,8 +1832,6 @@ local function items_Valanyr_Create(srcGUID, srcName, dstGUID, dstName, spellid,
 		return existing, 0.0
 	end
 
-	-- According to the blue post explaining the Val'anyr effect on introduction, all units are
-	-- contributing to the same bubble with a cap of 20.000
 	return min(20000, existing + charge), 1.0
 end
 
@@ -2127,10 +1843,6 @@ local function items_Stoicism_Create(srcGUID, srcName, dstGUID, dstName, spellid
 	return floor(maxHealth * 0.2), 1.0
 end
 
------------------
--- Data Tables --
------------------
-
 local mage_FireWard_Entry = {2.0, 30, generic_SpellScalingByTable_Create, mage_FireWard_Hit, mage_Absorb_Spells, 0.8053}
 local mage_FrostWard_Entry = {2.0, 30, generic_SpellScalingByTable_Create, mage_FrostWard_Hit, mage_Absorb_Spells, 0.8053}
 local mage_IceBarrier_Entry = {1.0, 60, mage_IceBarrier_Create, generic_Hit}
@@ -2139,155 +1851,152 @@ local priest_PWS_Entry = {1.0, 30, priest_PowerWordShield_Create, generic_Hit}
 local warlock_Sacrifice_Entry = {1.0, 30, generic_ConstantByTable_Create, generic_Hit, warlock_Sacrifice_Spells}
 local warlock_ShadowWard_Entry = {2.0, 30, generic_SpellScalingByTable_Create, warlock_ShadowWard_Hit, warlock_ShadowWard_Spells, 0.8053}
 
--- INCOMPLETE
 Core.Effects = {
-	-- Unknown Effect
-	-- This is used when a known effect is applied, but it is impossible to properly account for it,
-	-- for example if an AREA effect is applied with an unknown trigger
+
 	[0] = {1.0, 0, function() return 0, 0.0 end, nil},
-	[48707] = {3.0, 5, deathknight_AntiMagicShell_Create, deathknight_AntiMagicShell_Hit}, -- Anti-Magic Shell
-	[50461] = {-3.0, 10, deathknight_AntiMagicZone_Create, deathknight_AntiMagicZone_Hit}, -- Anti-Magic Zone
+	[48707] = {3.0, 5, deathknight_AntiMagicShell_Create, deathknight_AntiMagicShell_Hit},
+	[50461] = {-3.0, 10, deathknight_AntiMagicZone_Create, deathknight_AntiMagicZone_Hit},
 
-	[52284] = {1.0, nil, function() return 0, 0.0 end, deathknight_WoN_Hit1}, -- Will of the Necropolis (Rank 1)
-	[52285] = {1.0, nil, function() return 0, 0.0 end, deathknight_WoN_Hit2}, -- Will of the Necropolis (Rank 2)
-	[52286] = {1.0, nil, function() return 0, 0.0 end, deathknight_WoN_Hit3}, -- Will of the Necropolis (Rank 3)
+	[52284] = {1.0, nil, function() return 0, 0.0 end, deathknight_WoN_Hit1},
+	[52285] = {1.0, nil, function() return 0, 0.0 end, deathknight_WoN_Hit2},
+	[52286] = {1.0, nil, function() return 0, 0.0 end, deathknight_WoN_Hit3},
 
-	[62606] = {1.1, 10, druid_SavageDefense_Create, druid_SavageDefense_Hit}, -- Savage Defense
-	[543] = mage_FireWard_Entry, -- Fire Ward (rank 1)
-	[8457] = mage_FireWard_Entry, -- Fire Ward (rank 2)
-	[8458] = mage_FireWard_Entry, -- Fire Ward (rank 3)
-	[10223] = mage_FireWard_Entry, -- Fire Ward (rank 4)
-	[10225] = mage_FireWard_Entry, -- Fire Ward (rank 5)
-	[27218] = mage_FireWard_Entry, -- Fire Ward (rank 6)
-	[43010] = mage_FireWard_Entry, -- Fire Ward (rank 7)
-	[6143] = mage_FrostWard_Entry, -- Frost Ward (rank 1)
-	[8461] = mage_FrostWard_Entry, -- Frost Ward (rank 2)
-	[8462] = mage_FrostWard_Entry, -- Frost Ward (rank 3)
-	[10177] = mage_FrostWard_Entry, -- Frost Ward (rank 4)
-	[28609] = mage_FrostWard_Entry, -- Frost Ward (rank 5)
-	[32796] = mage_FrostWard_Entry, -- Frost Ward (rank 6)
-	[43012] = mage_FrostWard_Entry, -- Frost Ward (rank 7)
-	[11426] = mage_IceBarrier_Entry, -- Ice Barrier (rank 1)
-	[13031] = mage_IceBarrier_Entry, -- Ice Barrier (rank 2)
-	[13032] = mage_IceBarrier_Entry, -- Ice Barrier (rank 3)
-	[13033] = mage_IceBarrier_Entry, -- Ice Barrier (rank 4)
-	[27134] = mage_IceBarrier_Entry, -- Ice Barrier (rank 5)
-	[33405] = mage_IceBarrier_Entry, -- Ice Barrier (rank 6)
-	[43038] = mage_IceBarrier_Entry, -- Ice Barrier (rank 7)
-	[43039] = mage_IceBarrier_Entry, -- Ice Barrier (rank 8)
-	[1463] = mage_ManaShield_Entry, --  Mana shield (rank 1)
-	[8494] = mage_ManaShield_Entry, --  Mana shield (rank 2)
-	[8495] = mage_ManaShield_Entry, --  Mana shield (rank 3)
-	[10191] = mage_ManaShield_Entry, --  Mana shield (rank 4)
-	[10192] = mage_ManaShield_Entry, --  Mana shield (rank 5)
-	[10193] = mage_ManaShield_Entry, --  Mana shield (rank 6)
-	[27131] = mage_ManaShield_Entry, --  Mana shield (rank 7)
-	[43019] = mage_ManaShield_Entry, --  Mana shield (rank 8)
-	[43020] = mage_ManaShield_Entry, --  Mana shield (rank 9)
-	[58597] = {1.0, 6, paladin_SacredShield_Create, generic_Hit}, -- Sacred Shield
-	[17] = priest_PWS_Entry, -- Power Word: Shield (rank 1)
-	[592] = priest_PWS_Entry, -- Power Word: Shield (rank 2)
-	[600] = priest_PWS_Entry, -- Power Word: Shield (rank 3)
-	[3747] = priest_PWS_Entry, -- Power Word: Shield (rank 4)
-	[6065] = priest_PWS_Entry, -- Power Word: Shield (rank 5)
-	[6066] = priest_PWS_Entry, -- Power Word: Shield (rank 6)
-	[10898] = priest_PWS_Entry, -- Power Word: Shield (rank 7)
-	[10899] = priest_PWS_Entry, -- Power Word: Shield (rank 8)
-	[10900] = priest_PWS_Entry, -- Power Word: Shield (rank 9)
-	[10901] = priest_PWS_Entry, -- Power Word: Shield (rank 10)
-	[25217] = priest_PWS_Entry, -- Power Word: Shield (rank 11)
-	[25218] = priest_PWS_Entry, -- Power Word: Shield (rank 12)
-	[48065] = priest_PWS_Entry, -- Power Word: Shield (rank 13)
-	[48066] = priest_PWS_Entry, -- Power Word: Shield (rank 14)
-	[47753] = {1.0, 12, priest_DivineAegis_Create, generic_Hit}, -- Divine Aegis
-	[52179] = {2.5, nil, shaman_AstralShift_Create, shaman_AstralShift_Hit}, -- Astral Shift
-	[7812] = warlock_Sacrifice_Entry, -- Sacrifice (rank 1)
-	[19438] = warlock_Sacrifice_Entry, -- Sacrifice (rank 2)
-	[19440] = warlock_Sacrifice_Entry, -- Sacrifice (rank 3)
-	[19441] = warlock_Sacrifice_Entry, -- Sacrifice (rank 4)
-	[19442] = warlock_Sacrifice_Entry, -- Sacrifice (rank 5)
-	[19443] = warlock_Sacrifice_Entry, -- Sacrifice (rank 6)
-	[27273] = warlock_Sacrifice_Entry, -- Sacrifice (rank 7)
-	[47985] = warlock_Sacrifice_Entry, -- Sacrifice (rank 8)
-	[47986] = warlock_Sacrifice_Entry, -- Sacrifice (rank 9)
-	[6229] = warlock_ShadowWard_Entry, -- Shadow Ward (rank 1)
-	[11739] = warlock_ShadowWard_Entry, -- Shadow Ward (rank 1)
-	[11740] = warlock_ShadowWard_Entry, -- Shadow Ward (rank 2)
-	[28610] = warlock_ShadowWard_Entry, -- Shadow Ward (rank 3)
-	[47890] = warlock_ShadowWard_Entry, -- Shadow Ward (rank 4)
-	[47891] = warlock_ShadowWard_Entry, -- Shadow Ward (rank 5)
-	[64413] = {1.0, 8, items_Valanyr_Create, generic_Hit}, -- Val'anyr (spellid of the created absorb effect)
-	[60218] = {5.0, 10, function() return 4000, 1.0 end, items_EssenceOfGossamer_Hit}, -- Essence of Gossamer
-	[71586] = {1.0, 10, function() return 6400, 1.0 end, generic_Hit}, -- Corroded Skeleton Key
-	[36481] = {1.0, 4, function() return 100000, 1.0 end, generic_Hit}, -- Phaseshift Bulwark
-	[57350] = {1.0, 6, function() return 1500, 1.0 end, generic_Hit}, -- Darkmoon Card: Illusion
-	[17252] = {1.0, 1800, function() return 500, 1.0 end, generic_Hit}, -- Mark of the Dragon Lord
-	[29506] = {1.0, 20, function() return 900, 1.0 end, generic_Hit}, -- The Burrower's Shell
-	[31771] = {1.0, 20, function() return 440, 1.0 end, generic_Hit}, -- Runed Fungalcap
-	[9800] = {1.0, 60, function() return 175, 1.0 end, generic_Hit}, -- Truesilver Champion
-	[13234] = {1.0, 600, function() return 500, 1.0 end, generic_Hit}, -- Gnomish Harm Prevention Belt
-	[30458] = {1.0, 8, function() return 4000, 1.0 end, generic_Hit}, -- Nigh Invulnerability Belt
-	[27779] = {1.0, 30, function() return 350, 1.0 end, generic_Hit}, -- Divine Protection (Priest Dungeon Set 1/2 4pc bonus)
-	[28810] = {1.0, 30, function() return 500, 1.0 end, generic_Hit}, -- Armor of Faith (Priest Raid Set 3 4pc bonus)
-	[29674] = {1.0, nil, function() return 1000, 1.0 end, generic_Hit}, -- Lesser Ward of Shielding
-	[29719] = {1.0, nil, function() return 4000, 1.0 end, generic_Hit}, -- Greater Ward of Shielding
-	[29701] = {1.0, nil, function() return 4000, 1.0 end, generic_Hit}, -- Greater Ward of Shielding
-	[28538] = {1.0, 120, function() return 3400, 1.0 end, Holy_Hit}, -- Major Holy Protection Potion
-	[28537] = {1.0, 120, function() return 3400, 1.0 end, Shadow_Hit}, -- Major Shadow Protection Potion
-	[28536] = {1.0, 120, function() return 3400, 1.0 end, Arcane_Hit}, -- Major Arcane Protection Potion
-	[28513] = {1.0, 120, function() return 3400, 1.0 end, Nature_Hit}, -- Major Nature Protection Potion
-	[28512] = {1.0, 120, function() return 3400, 1.0 end, Frost_Hit}, -- Major Frost Protection Potion
-	[28511] = {1.0, 120, function() return 3400, 1.0 end, Fire_Hit}, -- Major Fire Protection Potion
-	[7233] = {1.0, 120, function() return 1300, 1.0 end, Fire_Hit}, -- Fire Protection Potion
-	[7239] = {1.0, 120, function() return 1300, 1.0 end, Frost_Hit}, -- Frost Protection Potion
-	[7242] = {1.0, 120, function() return 1300, 1.0 end, Shadow_Hit}, -- Shadow Protection Potion
-	[7245] = {1.0, 120, function() return 1300, 1.0 end, Holy_Hit}, -- Holy Protection Potion
-	[7254] = {1.0, 120, function() return 1300, 1.0 end, Nature_Hit}, -- Nature Protection Potion
-	[53915] = {1.0, 120, function() return 3100, 1.0 end, Shadow_Hit}, -- Mighty Shadow Protection Potion
-	[53914] = {1.0, 120, function() return 3100, 1.0 end, Nature_Hit}, -- Mighty Nature Protection Potion
-	[53913] = {1.0, 120, function() return 3100, 1.0 end, Frost_Hit}, -- Mighty Frost Protection Potion
-	[53911] = {1.0, 120, function() return 3100, 1.0 end, Fire_Hit}, -- Mighty Fire Protection Potion
-	[53910] = {1.0, 120, function() return 3100, 1.0 end, Arcane_Hit}, -- Mighty Arcane Protection Potion
-	[17548] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit}, --  Greater Shadow Protection Potion
-	[17546] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit}, -- Greater Nature Protection Potion
-	[17545] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit}, -- Greater Holy Protection Potion
-	[17544] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit}, -- Greater Frost Protection Potion
-	[17543] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit}, -- Greater Fire Protection Potion
-	[17549] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit}, -- Greater Arcane Protection Potion
-	[28527] = {1.0, 15, function() return 1000, 1.0 end, generic_Hit}, -- Fel Blossom
-	[29432] = {1.0, 3600, function() return 2000, 1.0 end, Fire_Hit}, -- Frozen Rune
-	[25750] = {1.0, 15, function() return 151, 1.0 end, Physical_Hit}, -- Defiler's Talisman/Talisman of Arathor
-	[25747] = {1.0, 15, function() return 344, 1.0 end, Physical_Hit}, -- Defiler's Talisman/Talisman of Arathor
-	[25746] = {1.0, 15, function() return 394, 1.0 end, Physical_Hit}, -- Defiler's Talisman/Talisman of Arathor
-	[23991] = {1.0, 15, function() return 550, 1.0 end, Physical_Hit}, -- Defiler's Talisman/Talisman of Arathor
-	[30997] = {1.0, 300, function() return 1800, 1.0 end, Fire_Hit}, -- Pendant of Frozen Flame Usage
-	[31002] = {1.0, 300, function() return 1800, 1.0 end, Arcane_Hit}, -- Pendant of the Null Rune
-	[30999] = {1.0, 300, function() return 1800, 1.0 end, Nature_Hit}, -- Pendant of Withering
-	[30994] = {1.0, 300, function() return 1800, 1.0 end, Frost_Hit}, -- Pendant of Thawing
-	[31000] = {1.0, 300, function() return 1800, 1.0 end, Shadow_Hit}, -- Pendant of Shadow's End
-	[23506] = {1.0, 20, function() return 1000, 1.0 end, generic_Hit}, -- Arena Grand Master
-	[12561] = {1.0, 60, function() return 400, 1.0 end, Fire_Hit}, -- Goblin Construction Helmet
-	[21956] = {1.0, 15, function() return 250, 1.0 end, Physical_Hit}, -- Mark of Resolution
-	[4057] = {1.0, 60, function() return 250, 1.0 end, Fire_Hit}, -- Flame Deflector
-	[4077] = {1.0, 60, function() return 300, 1.0 end, generic_Hit}, -- Ice Deflector
-	[39228] = {1.0, 20, function() return 609, 1.0 end, generic_Hit}, -- Argussian Compass (may not be an actual absorb)
-	[11657] = {1.0, 20, function() return 70, 1.0 end, generic_Hit}, -- Jang'thraze (Zul Farrak)
-	[10368] = {1.0, 15, function() return 1000, 1.0 end, generic_Hit}, -- Uther's Strength
-	[37515] = {1.0, 15, function() return 1000, 1.0 end, generic_Hit}, -- Warbringer Armor Proc
-	[42137] = {1.0, 86400, function() return 1000, 1.0 end, generic_Hit}, -- Greater Rune of Warding Proc
-	[26467] = {1.0, 30, function() return 1000, 1.0 end, generic_Hit}, -- Scarab Brooch
-	[26470] = {1.0, 8, function() return 1000, 1.0 end, generic_Hit}, -- Scarab Brooch
-	[27539] = {1.0, 6, function() return 1000, 1.0 end, generic_Hit}, -- Thick Obsidian Breatplate
-	[54808] = {1.0, 12, function() return 1000, 1.0 end, generic_Hit}, -- Noise Machine Sonic Shield
-	[55019] = {1.0, 12, function() return 1000, 1.0 end, generic_Hit}, -- Sonic Shield
-	[70845] = {1.0, 10, items_Stoicism_Create, generic_Hit}, -- Stoicism (Warrior Raid Set 10 4pc bonus)
-	[65686] = {1.0, 0, function() return 0, 0.0 end, nil}, -- Twin Val'kyr: Light Essence
-	[65684] = {1.0, 0, function() return 0, 0.0 end, nil} -- Twin Val'kyr: Dark Essence
+	[62606] = {1.1, 10, druid_SavageDefense_Create, druid_SavageDefense_Hit},
+	[543] = mage_FireWard_Entry,
+	[8457] = mage_FireWard_Entry,
+	[8458] = mage_FireWard_Entry,
+	[10223] = mage_FireWard_Entry,
+	[10225] = mage_FireWard_Entry,
+	[27218] = mage_FireWard_Entry,
+	[43010] = mage_FireWard_Entry,
+	[6143] = mage_FrostWard_Entry,
+	[8461] = mage_FrostWard_Entry,
+	[8462] = mage_FrostWard_Entry,
+	[10177] = mage_FrostWard_Entry,
+	[28609] = mage_FrostWard_Entry,
+	[32796] = mage_FrostWard_Entry,
+	[43012] = mage_FrostWard_Entry,
+	[11426] = mage_IceBarrier_Entry,
+	[13031] = mage_IceBarrier_Entry,
+	[13032] = mage_IceBarrier_Entry,
+	[13033] = mage_IceBarrier_Entry,
+	[27134] = mage_IceBarrier_Entry,
+	[33405] = mage_IceBarrier_Entry,
+	[43038] = mage_IceBarrier_Entry,
+	[43039] = mage_IceBarrier_Entry,
+	[1463] = mage_ManaShield_Entry,
+	[8494] = mage_ManaShield_Entry,
+	[8495] = mage_ManaShield_Entry,
+	[10191] = mage_ManaShield_Entry,
+	[10192] = mage_ManaShield_Entry,
+	[10193] = mage_ManaShield_Entry,
+	[27131] = mage_ManaShield_Entry,
+	[43019] = mage_ManaShield_Entry,
+	[43020] = mage_ManaShield_Entry,
+	[58597] = {1.0, 6, paladin_SacredShield_Create, generic_Hit},
+	[17] = priest_PWS_Entry,
+	[592] = priest_PWS_Entry,
+	[600] = priest_PWS_Entry,
+	[3747] = priest_PWS_Entry,
+	[6065] = priest_PWS_Entry,
+	[6066] = priest_PWS_Entry,
+	[10898] = priest_PWS_Entry,
+	[10899] = priest_PWS_Entry,
+	[10900] = priest_PWS_Entry,
+	[10901] = priest_PWS_Entry,
+	[25217] = priest_PWS_Entry,
+	[25218] = priest_PWS_Entry,
+	[48065] = priest_PWS_Entry,
+	[48066] = priest_PWS_Entry,
+	[47753] = {1.0, 12, priest_DivineAegis_Create, generic_Hit},
+	[52179] = {2.5, nil, shaman_AstralShift_Create, shaman_AstralShift_Hit},
+	[7812] = warlock_Sacrifice_Entry,
+	[19438] = warlock_Sacrifice_Entry,
+	[19440] = warlock_Sacrifice_Entry,
+	[19441] = warlock_Sacrifice_Entry,
+	[19442] = warlock_Sacrifice_Entry,
+	[19443] = warlock_Sacrifice_Entry,
+	[27273] = warlock_Sacrifice_Entry,
+	[47985] = warlock_Sacrifice_Entry,
+	[47986] = warlock_Sacrifice_Entry,
+	[6229] = warlock_ShadowWard_Entry,
+	[11739] = warlock_ShadowWard_Entry,
+	[11740] = warlock_ShadowWard_Entry,
+	[28610] = warlock_ShadowWard_Entry,
+	[47890] = warlock_ShadowWard_Entry,
+	[47891] = warlock_ShadowWard_Entry,
+	[64413] = {1.0, 8, items_Valanyr_Create, generic_Hit},
+	[60218] = {5.0, 10, function() return 4000, 1.0 end, items_EssenceOfGossamer_Hit},
+	[71586] = {1.0, 10, function() return 6400, 1.0 end, generic_Hit},
+	[36481] = {1.0, 4, function() return 100000, 1.0 end, generic_Hit},
+	[57350] = {1.0, 6, function() return 1500, 1.0 end, generic_Hit},
+	[17252] = {1.0, 1800, function() return 500, 1.0 end, generic_Hit},
+	[29506] = {1.0, 20, function() return 900, 1.0 end, generic_Hit},
+	[31771] = {1.0, 20, function() return 440, 1.0 end, generic_Hit},
+	[9800] = {1.0, 60, function() return 175, 1.0 end, generic_Hit},
+	[13234] = {1.0, 600, function() return 500, 1.0 end, generic_Hit},
+	[30458] = {1.0, 8, function() return 4000, 1.0 end, generic_Hit},
+	[27779] = {1.0, 30, function() return 350, 1.0 end, generic_Hit},
+	[28810] = {1.0, 30, function() return 500, 1.0 end, generic_Hit},
+	[29674] = {1.0, nil, function() return 1000, 1.0 end, generic_Hit},
+	[29719] = {1.0, nil, function() return 4000, 1.0 end, generic_Hit},
+	[29701] = {1.0, nil, function() return 4000, 1.0 end, generic_Hit},
+	[28538] = {1.0, 120, function() return 3400, 1.0 end, Holy_Hit},
+	[28537] = {1.0, 120, function() return 3400, 1.0 end, Shadow_Hit},
+	[28536] = {1.0, 120, function() return 3400, 1.0 end, Arcane_Hit},
+	[28513] = {1.0, 120, function() return 3400, 1.0 end, Nature_Hit},
+	[28512] = {1.0, 120, function() return 3400, 1.0 end, Frost_Hit},
+	[28511] = {1.0, 120, function() return 3400, 1.0 end, Fire_Hit},
+	[7233] = {1.0, 120, function() return 1300, 1.0 end, Fire_Hit},
+	[7239] = {1.0, 120, function() return 1300, 1.0 end, Frost_Hit},
+	[7242] = {1.0, 120, function() return 1300, 1.0 end, Shadow_Hit},
+	[7245] = {1.0, 120, function() return 1300, 1.0 end, Holy_Hit},
+	[7254] = {1.0, 120, function() return 1300, 1.0 end, Nature_Hit},
+	[53915] = {1.0, 120, function() return 3100, 1.0 end, Shadow_Hit},
+	[53914] = {1.0, 120, function() return 3100, 1.0 end, Nature_Hit},
+	[53913] = {1.0, 120, function() return 3100, 1.0 end, Frost_Hit},
+	[53911] = {1.0, 120, function() return 3100, 1.0 end, Fire_Hit},
+	[53910] = {1.0, 120, function() return 3100, 1.0 end, Arcane_Hit},
+	[17548] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit},
+	[17546] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit},
+	[17545] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit},
+	[17544] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit},
+	[17543] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit},
+	[17549] = {1.0, 120, function() return 2600, 1.0 end, Shadow_Hit},
+	[28527] = {1.0, 15, function() return 1000, 1.0 end, generic_Hit},
+	[29432] = {1.0, 3600, function() return 2000, 1.0 end, Fire_Hit},
+	[25750] = {1.0, 15, function() return 151, 1.0 end, Physical_Hit},
+	[25747] = {1.0, 15, function() return 344, 1.0 end, Physical_Hit},
+	[25746] = {1.0, 15, function() return 394, 1.0 end, Physical_Hit},
+	[23991] = {1.0, 15, function() return 550, 1.0 end, Physical_Hit},
+	[30997] = {1.0, 300, function() return 1800, 1.0 end, Fire_Hit},
+	[31002] = {1.0, 300, function() return 1800, 1.0 end, Arcane_Hit},
+	[30999] = {1.0, 300, function() return 1800, 1.0 end, Nature_Hit},
+	[30994] = {1.0, 300, function() return 1800, 1.0 end, Frost_Hit},
+	[31000] = {1.0, 300, function() return 1800, 1.0 end, Shadow_Hit},
+	[23506] = {1.0, 20, function() return 1000, 1.0 end, generic_Hit},
+	[12561] = {1.0, 60, function() return 400, 1.0 end, Fire_Hit},
+	[21956] = {1.0, 15, function() return 250, 1.0 end, Physical_Hit},
+	[4057] = {1.0, 60, function() return 250, 1.0 end, Fire_Hit},
+	[4077] = {1.0, 60, function() return 300, 1.0 end, generic_Hit},
+	[39228] = {1.0, 20, function() return 609, 1.0 end, generic_Hit},
+	[11657] = {1.0, 20, function() return 70, 1.0 end, generic_Hit},
+	[10368] = {1.0, 15, function() return 1000, 1.0 end, generic_Hit},
+	[37515] = {1.0, 15, function() return 1000, 1.0 end, generic_Hit},
+	[42137] = {1.0, 86400, function() return 1000, 1.0 end, generic_Hit},
+	[26467] = {1.0, 30, function() return 1000, 1.0 end, generic_Hit},
+	[26470] = {1.0, 8, function() return 1000, 1.0 end, generic_Hit},
+	[27539] = {1.0, 6, function() return 1000, 1.0 end, generic_Hit},
+	[54808] = {1.0, 12, function() return 1000, 1.0 end, generic_Hit},
+	[55019] = {1.0, 12, function() return 1000, 1.0 end, generic_Hit},
+	[70845] = {1.0, 10, items_Stoicism_Create, generic_Hit},
+	[65686] = {1.0, 0, function() return 0, 0.0 end, nil},
+	[65684] = {1.0, 0, function() return 0, 0.0 end, nil}
 }
 
 Core.AreaTriggers = {
-	[51052] = 50461, -- Anti-Magic Zone
-	[62618] = 81781 -- Power Word: Barrier
+	[51052] = 50461,
+	[62618] = 81781
 }
 
 Core.CombatTriggers = {
@@ -2301,52 +2010,8 @@ Core.CombatTriggers = {
 	OnHealCrit = {}
 }
 
-----------------
--- Initialize --
-----------------
-
 if not Core.Available then
 	Core.RegisterEvent("PLAYER_ENTERING_WORLD")
 else
 	Core.Enable()
 end
-
-------------------------
--- Callback Reference --
-------------------------
-
--- EffectApplied
--- (srcGUID, srcName, dstGUID, dstName, spellid, value, quality, duration)
--- The effect-individual messages get sent on visible and non-visible effects
-
--- EffectUpdated
--- (guid, spellid, value, [duration, only if refreshed])
-
--- EffectRemoved
--- (guid, spellid)
-
--- Whenever the unit that radiates an AREA effect is created (visible/non-visible)
--- Note that the actual effect on the unit that absorbs damage casues an
--- EffectApplied/EffectRemoved message, but not EffectUpdated (instead AreaUpdated)
--- The rationale behind this is performance, since we cannot update every unit afflicted
--- by the area effect on every hit. Therefore, we have the shared entry in the activeEffects
--- table of each unit, and will handle it the same way when exporting - separately from each
--- others.
-
--- AreaCreated
--- (srcGUID, srcName, triggerGUID, spellid, value, quality)
-
--- AreaUpdated
--- (triggerGUID, value)
-
--- AreaCleared
--- (triggerGUID)
-
--- UnitUpdated
--- (guid, value, quality)
--- Only for VISIBLE changes on the total amount
-
--- UnitCleared
--- (guid)
--- Everytime a unit gets cleared from all absorb effects (quality reset)
--- including non-visible effects

@@ -5,10 +5,10 @@ local CL = DBM_CORE_L
 
 L.MainFrame 						= CL.DEADLY_BOSS_MODS -- NO TRANSLATE
 
-L.DBMWarmane						= CL.DBM .. "-Chromiecraft"
+L.DBMWarmane						= CL.DBM .. "-Warmane by Zidras"
 L.TranslationByPrefix				= "Retail backport by "
 L.TranslationBy						= "Barsoom, Bunny67, Zidras"
-L.Website							= "Updates on GitHub at |cFF73C2FBhttps://github.com/5Buttons/DBM-Chromiecraft|r"
+L.Website							= "Visit us on discord at |cFF73C2FBhttps://discord.gg/CyVWDWS|r"
 L.WebsiteButton						= "Website"
 
 L.OTabBosses						= "Boss Options"--Deprecated and will be deleted once tabs no longer use this
@@ -356,15 +356,7 @@ L.AreaTitle_BarSetup				= "Bar Appearance Options"
 L.AreaTitle_Behavior				= "Bar Behavior Options"
 L.AreaTitle_BarSetupSmall			= "Small Bar Options"
 L.AreaTitle_BarSetupHuge			= "Huge Bar Options"
-L.AreaTitle_BarSetupVariance		= "Variance Bar Options"
 L.EnableHugeBar						= "Enable huge bar (aka Bar 2)"
-L.EnableVarianceBar 				= "Enable variance bars"
-L.VarianceTransparency				= "Bar transparency: %0.1f"
-L.VarianceTimerTextBehavior			= "Set variance timer text behavior"
-L.ZeroatWindowEnds					= "Text hits zero at end of CD window"
-L.ZeroatWindowStartPause			= "Text hits zero at start of CD window and pauses"
-L.ZeroatWindowStartRestart			= "Text hits zero at start of CD window then restarts"
-L.ZeroatWindowStartNeg				= "Text hits zero at start of CD window then goes negative"--Default
 L.BarIconLeft						= "Left icon"
 L.BarIconRight						= "Right icon"
 L.ExpandUpwards						= "Expand upward"
@@ -450,12 +442,6 @@ L.Area_TimerTracker					= "TimerTracker Options"
 L.PlayTT							= "Enable TimerTracker"
 L.PlayTTCountdown					= "Play TimerTracker countdown sound"
 L.PlayTTCountdownFinished			= "Play TimerTracker countdown finished sound"
-
-L.Area_BossBanner					= "Boss Banner Options"
-L.EnableBB							= "Enable Boss Banner"
-L.PlayBBLoot						= "Play Boss Banner Loot animation"
-L.PlayBBSound						= "Play Boss Banner sound"
-L.OverrideBBFont					= "Override Boss Banner Blizzard default font properties (needs to be enabled to change any font property)"
 
 -- Panel: Reduce Information
 L.Panel_ReducedInformation			= "Reduce Information"

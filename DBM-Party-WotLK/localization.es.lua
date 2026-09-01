@@ -916,7 +916,7 @@ L:SetGeneralLocalization({
 L = DBM:GetModLocalization("LichKingEvent")
 
 L:SetGeneralLocalization({
-	name = "Huida de Arthas"
+	name = "Evento del Rey Exanime"
 })
 
 L:SetTimerLocalization({
@@ -928,7 +928,6 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	ArthasYellKill	= "¡FUEGO! ¡FUEGO!",
 	Ghoul			= "Necrófago enfurecido",	--creature id 36940. Not sure how to use these in function above to simplify locals though. :\
 	Abom			= "Abominación torpe",		--creature id 37069
 	WitchDoctor		= "Médico brujo resucitado",--creature id 36941

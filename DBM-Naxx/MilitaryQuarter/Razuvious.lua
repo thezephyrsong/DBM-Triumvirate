@@ -1,9 +1,9 @@
 local mod	= DBM:NewMod("Razuvious", "DBM-Naxx", 4)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20250924081528")
+mod:SetRevision("20221016184543")
 mod:SetCreatureID(16061)
-mod:SetEncounterID(1113)
+
 mod:RegisterCombat("combat_yell", L.Yell1, L.Yell2, L.Yell3, L.Yell4)
 
 mod:RegisterEventsInCombat(
@@ -12,8 +12,8 @@ mod:RegisterEventsInCombat(
 	"UNIT_DIED"
 )
 
-local warnShoutNow		= mod:NewSpellAnnounce(55543, 1)
-local warnShoutSoon		= mod:NewSoonAnnounce(55543, 3)
+local warnShoutNow		= mod:NewSpellAnnounce(29107, 1)
+local warnShoutSoon		= mod:NewSoonAnnounce(29107, 3)
 local warnShieldWall	= mod:NewAnnounce("WarningShieldWallSoon", 3, 29061, nil, nil, nil, 29061)
 
 local warnStrike		= mod:NewTargetNoFilterAnnounce(55470, 2)
@@ -25,7 +25,7 @@ local timerShieldWall	= mod:NewCDTimer(20, 29061, nil, nil, nil, 5, nil, DBM_COM
 local timerMindControl	= mod:NewBuffActiveTimer(60, 605, nil, nil, nil, 6)
 
 function mod:OnCombatStart(delay)
-	timerShout:Start(15 - delay)
+	timerShout:Start(16 - delay)
 	warnShoutSoon:Schedule(11 - delay)
 	timerStrikeCD:Start(20 - delay)
 end

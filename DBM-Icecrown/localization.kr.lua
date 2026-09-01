@@ -2,18 +2,12 @@ if GetLocale() ~= "koKR" then return end
 
 local L
 
-----------------------
---  Lord Marrowgar  --
-----------------------
 L = DBM:GetModLocalization("LordMarrowgar")
 
 L:SetGeneralLocalization({
 	name = "군주 매로우가르"
 })
 
--------------------------
---  Lady Deathwhisper  --
--------------------------
 L = DBM:GetModLocalization("Deathwhisper")
 
 L:SetGeneralLocalization({
@@ -25,43 +19,39 @@ L:SetTimerLocalization({
 })
 
 L:SetWarningLocalization({
-	WarnReanimating				= "이교도 부활",			-- Reanimating an adherent or fanatic
+	WarnReanimating				= "이교도 부활",
 	WarnAddsSoon				= "곧 새로운 이교도 등장",
-	SpecWarnVengefulShade		= "복수의 망령 공격 - 피하세요!",--creatureid 38222
-	WeaponsStatus				= "Auto Unequipping enabled: %s (%s - %s)" --Needs Translating
+	SpecWarnVengefulShade		= "복수의 망령 공격 - 피하세요!",
+	WeaponsStatus				= "Auto Unequipping enabled"
 })
 
 L:SetOptionLocalization({
 	WarnAddsSoon				= "이교도 등장 이전에 알림 보기",
 	WarnReanimating				= "이교도 부활 알림 보기",
 	TimerAdds					= "다음 이교도 바 보기",
-	SpecWarnVengefulShade		= "복수의 망령으로부터 공격을 받을 경우 특수 경고 보기",--creatureid 38222
-	WeaponsStatus				= "Special warning at combat start if unequip/equip function is enabled", --Needs Translating
+	SpecWarnVengefulShade		= "복수의 망령으로부터 공격을 받을 경우 특수 경고 보기",
+	WeaponsStatus				= "Special warning at combat start if unequip/equip function is enabled",
 	ShieldHealthFrame			= "$spell:70842의 방어막 바와 보스 체력바를 함께 보기",
-	SoundWarnCountingMC			= "Play a 5 second audio countdown for Mind Control", --Needs Translating
---	RemoveDruidBuff				= "Remove $spell:48469 / $spell:48470 24 seconds into the fight", --Needs Translating
+	SoundWarnCountingMC			= "Play a 5 second audio countdown for Mind Control",
+
 	RemoveBuffsOnMC				= "$spell:71289를 시전하면 버프를 제거합니다. 각 옵션은 누적됩니다.",
 	Gift						= "$spell:48469 / $spell:48470을 제거합니다. $spell:33786 저항을 방지하기 위한 최소한의 접근입니다.",
 	CCFree						= "+ $spell:48169 / $spell:48170을 제거합니다. 그림자 학교의 주문 저항을 설명합니다.",
 	ShortOffensiveProcs			= "+ 지속 시간이 짧은 공격 절차를 제거합니다. 공격대 피해 출력을 손상시키지 않으면서 공격대 안전을 위해 권장됩니다.",
 	MostOffensiveBuffs			= "+ 대부분의 공격 버프를 제거합니다(주로 캐스터 및 |cFFFF7C0A야성 드루이드|r용). 손상 출력 손실로 최대 레이드 안전 및 자체 버프/변형이 필요합니다!",
-	EqUneqWeapons				= "Unequip/equip weapons if $spell:71289 is cast on you. For equipping to work, create a COMPLETE (with the weapons of choice that will be equipped) equipment set named \"pve\".", --Needs Translating
-	EqUneqTimer					= "Remove weapons by timer ALWAYS, not on cast (if ping is high). The option above must be enabled." --Needs Translating
+	EqUneqWeapons				= "Unequip/equip weapons if $spell:71289 is cast on you. For equipping to work, create a COMPLETE (with the weapons of choice that will be equipped) equipment set named \"pve\".",
+	EqUneqTimer					= "Remove weapons by timer ALWAYS, not on cast (if ping is high). The option above must be enabled."
 })
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "일어나라, 순수한 모습을 기뻐하라!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "마나 방벽",
---	Fanatic1				= "교단 광신자",
---	Fanatic2				= "변형된 광신자",
---	Fanatic3				= "되살아난 광신자",
+
 	setMissing				= "주목! DBM 자동 무기 해제/장착은 pve라는 장비 세트를 생성할 때까지 작동하지 않습니다.",
 	EqUneqLineDescription	= "자동 장착/장비 해제"
 })
 
-----------------------
---  Gunship Battle  --
-----------------------
 L = DBM:GetModLocalization("GunshipBattle")
 
 L:SetGeneralLocalization({
@@ -92,9 +82,6 @@ L:SetMiscLocalization({
 	KillHorde		= "얼라이언스는 기가 꺾였다. 리치 왕을 향해 전진하라!"
 })
 
------------------------------
---  Deathbringer Saurfang  --
------------------------------
 L = DBM:GetModLocalization("Deathbringer")
 
 L:SetGeneralLocalization({
@@ -103,18 +90,16 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	RunePowerFrame		= "보스 체력 바와 함께 $spell:72371 바 보기",
---	RemoveDI			= "$spell:19752를 지웁니다. $spell:72293이 캐스팅되지 않도록 합니다."
+
 })
 
 L:SetMiscLocalization({
 	RunePower			= "피 마력",
 	PullAlliance		= "그러면 이동하자! 이동...",
-	PullHorde			= "코르크론, 출발하라! 용사들이여, 뒤를 조심하게. 스컬지는..."
+	PullHorde			= "코르크론, 출발하라! 용사들이여, 뒤를 조심하게. 스컬지는...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
------------------
---  Festergut  --
------------------
 L = DBM:GetModLocalization("Festergut")
 
 L:SetGeneralLocalization({
@@ -131,9 +116,6 @@ L:SetMiscLocalization({
 	AchievementFailed	= ">> 업적 실패 - 역병 저항 : %s (%d 중첩) <<"
 })
 
----------------
---  Rotface  --
----------------
 L = DBM:GetModLocalization("Rotface")
 
 L:SetGeneralLocalization({
@@ -142,7 +124,7 @@ L:SetGeneralLocalization({
 
 L:SetWarningLocalization({
 	WarnOozeSpawn				= "작은 수액괴물 생성",
-	SpecWarnLittleOoze			= "작은 수액괴물의 공격! - 뛰세요!"--creatureid 36897
+	SpecWarnLittleOoze			= "작은 수액괴물의 공격! - 뛰세요!"
 })
 
 L:SetOptionLocalization({
@@ -152,40 +134,20 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	YellSlimePipes1	= "좋은 소식이에요, 여러분! 독성 수액 배출관을 고쳤어요!",	-- Professor Putricide
-	YellSlimePipes2	= "끝내 주는 소식이에요, 여러분! 수액이 다시 나오는군요!"	-- Professor Putricide
+	YellSlimePipes1	= "좋은 소식이에요, 여러분! 독성 수액 배출관을 고쳤어요!",
+	YellSlimePipes2	= "끝내 주는 소식이에요, 여러분! 수액이 다시 나오는군요!"
 })
 
----------------------------
---  Professor Putricide  --
----------------------------
 L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "교수 퓨트리사이드"
 })
 
-L:SetWarningLocalization({
-	WarnReengage			= "%s: 재전투"
-})
-
-L:SetTimerLocalization({
-	TimerReengage			= "재전투"
-})
-
---[[L:SetOptionLocalization({
-	WarnReengage			= "Show warning for Boss re-engage", -- needs localization
-	TimerReengage			= "Show timer for Boss re-engage" -- needs localization
-})]]
-
 L:SetMiscLocalization({
-	YellTransform1			= "흠, 아무 느낌도 없군요. 엥?! 이건 어디서 온 거지요?",
-	YellTransform2			= "이 맛은... 체리군요! 오! 이런 실례!"
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
-----------------------------
---  Blood Prince Council  --
-----------------------------
 L = DBM:GetModLocalization("BPCouncil")
 
 L:SetGeneralLocalization({
@@ -217,9 +179,6 @@ L:SetMiscLocalization({
 	EmpoweredFlames		= "강력한 불꽃이 (%S+)"
 })
 
------------------------
---  Queen Lana'thel  --
------------------------
 L = DBM:GetModLocalization("Lanathel")
 
 L:SetGeneralLocalization({
@@ -235,9 +194,6 @@ L:SetMiscLocalization({
 	YellFrenzy				= "피가 모잘라~! 앙~"
 })
 
------------------------------
---  Valithria Dreamwalker  --
------------------------------
 L = DBM:GetModLocalization("Valithria")
 
 L:SetGeneralLocalization({
@@ -267,9 +223,6 @@ L:SetMiscLocalization({
 	YellPortals		= "에메랄드의 꿈으로 가는 차원문을 열어두었다. 너희의 구원은 그 안에 있다..."
 })
 
-------------------
---  Sindragosa  --
-------------------
 L = DBM:GetModLocalization("Sindragosa")
 
 L:SetGeneralLocalization({
@@ -301,17 +254,14 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellAirphase		= "여기가 끝이다! 아무도 살아남지 못하리라!",
-	YellPhase2			= "자, 주인님의 무한한 힘을 느끼고 절망에 빠져보아라!",--Now, feel my master's limitless power and despair!",
-	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
-	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
+	YellPhase2			= "자, 주인님의 무한한 힘을 느끼고 절망에 빠져보아라!",
+	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",
+	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",
 	BeaconIconSet		= "냉기 봉화 아이콘{rt%d} : %s",
 	AchievementWarning	= "경고 : %s님의 신비한 강타가 5 중첩입니다.",
 	AchievementFailed	= ">> 업적 실패 - 신비한 아픔 : %s (%d 중첩) <<"
 })
 
----------------------
---  The Lich King  --
----------------------
 L = DBM:GetModLocalization("LichKing")
 
 L:SetGeneralLocalization({
@@ -341,33 +291,33 @@ L:SetOptionLocalization({
 	AnnounceValkGrabs			= "발키리 대상 및 전술 목표 아이콘 설정 내용을 공격대 대화로 알리기(공격대장 권한 필요)",
 	SpecWarnValkyrLow			= "발키리의 HP가 55%이하가 된 경우 특수 경고 보기",
 	AnnouncePlagueStack			= "$spell:70337 중첩 알림 보기(10중첩 이상일때, 5 중첩마다)(공격대장 권한 필요)",
-	ShowFrame					= "Show Val'Kyr Targets frame", --Needs Translating
-	FrameClassColor				= "Use Class Colors in Val'Kyr Targets frame", --Needs Translating
-	FrameUpwards				= "Expand Val'Kyr target frame upwards", --Needs Translating
-	FrameLocked					= "Lock Val'Kyr Targets frame", --Needs Translating
-	RemoveImmunes				= "Remove immunity spells before exiting Frostmourne room" --Needs Translating
+	ShowFrame					= "Show Val'Kyr Targets frame",
+	FrameClassColor				= "Use Class Colors in Val'Kyr Targets frame",
+	FrameUpwards				= "Expand Val'Kyr target frame upwards",
+	FrameLocked					= "Lock Val'Kyr Targets frame",
+	RemoveImmunes				= "Remove immunity spells before exiting Frostmourne room"
 })
 
 L:SetMiscLocalization({
 	LKPull					= "그러니까 성스러운 빛이 자랑하던 정의가 마침내 왔다 이건가? 폴드링, 서리한을 내려놓고 자비라도 애걸하라는 건가?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "진정으로 정의에 이끌렸단 말이냐? 궁금하구나...",
 	ValkGrabbedIcon			= "발키리 납치 : {rt%d} %s",
 	ValkGrabbed				= "발키리 납치 : %s",
 	PlagueStackWarning		= "경고: 괴저역병 - %s (%d 중첩)",
 	AchievementCompleted	= ">> 업적 성공 - 괴저역병 %s (%d 중첩) <<",
-	FrameTitle				= "Valkyr targets", --Needs Translating
-	FrameLock				= "Frame Lock", --Needs Translating
-	FrameClassColor			= "Use Class Colors", --Needs Translating
-	FrameOrientation		= "Expand upwards", --Needs Translating
-	FrameHide				= "Hide Frame", --Needs Translating
-	FrameClose				= "Close", --Needs Translating
+	FrameTitle				= "Valkyr targets",
+	FrameLock				= "Frame Lock",
+	FrameClassColor			= "Use Class Colors",
+	FrameOrientation		= "Expand upwards",
+	FrameHide				= "Hide Frame",
+	FrameClose				= "Close",
 	FrameGUIDesc			= "발키르 프레임",
 	FrameGUIMoveMe			= "발키르 프레임 이동"
 })
 
--------------
---  Trash  --
--------------
 L = DBM:GetModLocalization("ICCTrash")
 
 L:SetGeneralLocalization({

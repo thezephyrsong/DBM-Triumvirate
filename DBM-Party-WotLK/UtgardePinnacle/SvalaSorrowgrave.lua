@@ -3,9 +3,8 @@ local L		= mod:GetLocalizedStrings()
 
 mod.statTypes = "normal,heroic,mythic"
 
-mod:SetRevision("20251221220131")
-mod:SetCreatureID(29281)
-mod:SetEncounterID(577)
+mod:SetRevision("20220518110528")
+mod:SetCreatureID(26668)
 
 mod:RegisterCombat("combat")
 
@@ -14,27 +13,25 @@ mod:RegisterEvents(
 )
 
 mod:RegisterEventsInCombat(
-	"SPELL_AURA_APPLIED 48278 48276",
-	"SPELL_AURA_REMOVED 48278"
+	"SPELL_AURA_APPLIED 48267 48276",
+	"SPELL_AURA_REMOVED 48276"
 )
 
-local warningSacrifice	= mod:NewTargetNoFilterAnnounce(48278, 4)
+local warningSacrifice	= mod:NewTargetNoFilterAnnounce(48267, 4)
 
-local timerSacrifice	= mod:NewBuffActiveTimer(25, 48278, nil, nil, nil, 5, nil, DBM_COMMON_L.DAMAGE_ICON)
+local timerSacrifice	= mod:NewBuffActiveTimer(25, 48276, nil, nil, nil, 5, nil, DBM_COMMON_L.DAMAGE_ICON)
 local timerRoleplay		= mod:NewTimer(67, "timerRoleplay", "Interface\\Icons\\Spell_Holy_BorrowedTime") --roleplay for boss is active
 
 function mod:SPELL_AURA_APPLIED(args)
-	if args.spellId == 48278 then
-		if self:AntiSpam(3, 1) then
-			warningSacrifice:Show(args.destName)
-		end
+	if args.spellId == 48267 then
+		warningSacrifice:Show(args.destName)
 	elseif args.spellId == 48276 then
 		timerSacrifice:Start()
 	end
 end
 
 function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 48278 then
+	if args.spellId == 48276 then
 		timerSacrifice:Stop()
 	end
 end

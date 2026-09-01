@@ -6,10 +6,6 @@ local L
 ------------------------------
 L = DBM:GetModLocalization("ApothecaryTrio")
 
-L:SetGeneralLocalization({
-	name = "Trio d'apothicaires"
-})
-
 L:SetTimerLocalization({
 	HummelActive		= "Hummel becomes active",
 	BaxterActive		= "Baxter becomes active",
@@ -59,10 +55,6 @@ L:SetMiscLocalization({
 -------------------
 L = DBM:GetModLocalization("CorenDirebrew")
 
-L:SetGeneralLocalization({
-	name = "Coren Navrebière"
-})
-
 L:SetWarningLocalization({
 	specWarnBrew		= "Débarrassez-vous de la bière avant qu'elle ne vous en lance une autre !",
 	specWarnBrewStun	= "Vous avez reçu un coup sur la tête. La prochaine fois, videz votre verre !"
@@ -82,10 +74,6 @@ L:SetMiscLocalization({
 -------------------
 L = DBM:GetModLocalization("HeadlessHorseman")
 
-L:SetGeneralLocalization({
-	name = "Cavalier sans tête"
-})
-
 L:SetWarningLocalization({
 	WarnPhase				= "Phase %d",
 	warnHorsemanSoldiers		= "Arrivée des Citrouilles vibrantes !",
@@ -103,8 +91,6 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	HorsemanSummon			= "Le cavalier sans tête se lève...", -- CONFIRM! local SQL has different string: Lève-toi, cavalier...
-	HorsemanHead			= "Viens donc ici , sombre abruti !",  -- Attention, espace avant la virgule. CONFIRM! local SQL has different string: Viens donc ici, sombre abruti !
-	HorsemanSoldiers		= "Levez-vous, mes recrues ! Au combat sans surseoir ! Au chevalier déchu, donnez enfin victoire !",
-	SayCombatEnd			= "Je la connais trop bien, cette fin importune. Que faut-il au destin pour changer ma fortune ?"
+	HorsemanSummon			= "Le cavalier sans tête se lève...",
+	HorsemanSoldiers			= "Levez-vous, mes recrues ! Au combat sans surseoir ! Au chevalier déchu, donnez enfin victoire !"
 })

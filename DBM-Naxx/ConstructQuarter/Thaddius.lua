@@ -2,22 +2,19 @@
 local mod	= DBM:NewMod("Thaddius", "DBM-Naxx", 2)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260502210600")
+mod:SetRevision("20221008164846")
 mod:SetCreatureID(15928)
-mod:SetEncounterID(1120)
 
 mod:RegisterCombat("combat_yell", L.Yell)
 
 mod:RegisterEventsInCombat(
 	"SPELL_CAST_START 28089",
-	"SPELL_CAST_SUCCESS 28134",
 	"CHAT_MSG_RAID_BOSS_EMOTE",
 	"UNIT_AURA player"
 )
 
 local warnShiftSoon			= mod:NewPreWarnAnnounce(28089, 5, 3)
 local warnShiftCasting		= mod:NewCastAnnounce(28089, 4)
-local warnPowerSurge			= mod:NewSpecialWarningDefensive(54529, nil, nil, "Tank", 3, 2)
 --local warnThrow				= mod:NewSpellAnnounce(28338, 2)
 local warnThrowSoon			= mod:NewSoonAnnounce(28338, 1)
 
@@ -25,10 +22,10 @@ local warnChargeChanged		= mod:NewSpecialWarning("WarningChargeChanged", nil, ni
 local warnChargeNotChanged	= mod:NewSpecialWarning("WarningChargeNotChanged", false, nil, nil, 1, 12, nil, nil, 28089)
 local yellShift				= mod:NewShortPosYell(28089, DBM_CORE_L.AUTO_YELL_CUSTOM_POSITION)
 
-local enrageTimer			= mod:NewBerserkTimer(360)
+local enrageTimer			= mod:NewBerserkTimer(365)
 local timerNextShift		= mod:NewNextTimer(30, 28089, nil, nil, nil, 2, nil, DBM_COMMON_L.DEADLY_ICON)
 local timerShiftCast		= mod:NewCastTimer(3, 28089, nil, nil, nil, 2)
-local timerThrow			= mod:NewNextTimer(20, 28338, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)
+local timerThrow			= mod:NewNextTimer(20.6, 28338, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)
 
 if not DBM.Options.GroupOptionsBySpell then
 	mod:AddMiscLine(DBM_CORE_L.OPTION_CATEGORY_DROPDOWNS)
@@ -70,7 +67,7 @@ do
 			timerNextShift:Start()
 			timerShiftCast:Start()
 			warnShiftCasting:Show()
-			warnShiftSoon:Schedule(16.8)
+			warnShiftSoon:Schedule(25)
 			lastShift = GetTime()
 		end
 	end
@@ -118,13 +115,6 @@ do
 	end
 end
 
-function mod:SPELL_CAST_SUCCESS(args)
-	if args.spellId == 28134 and DBM:IsTanking("player", DBM:GetUnitIdFromCID(15929, false)) then
-		warnPowerSurge:Show()
-		warnChargeChanged:Play("defensive")
-	end	
-end
-
 function mod:CHAT_MSG_RAID_BOSS_EMOTE(msg)
 	if msg:match(L.Emote) or msg:match(L.Emote2) or msg:find(L.Emote) or msg:find(L.Emote2) or msg == L.Emote or msg == L.Emote2 then
 		down = down + 1
@@ -134,8 +124,6 @@ function mod:CHAT_MSG_RAID_BOSS_EMOTE(msg)
 			warnThrowSoon:Cancel()
 			DBM.BossHealth:Hide()
 			enrageTimer:Start()
-			timerNextShift:Start(21.8)  -- First polarity shift in 30s
-            warnShiftSoon:Schedule(16.8)  -- Warn at 25s (5s before)
 		end
 	end
 end

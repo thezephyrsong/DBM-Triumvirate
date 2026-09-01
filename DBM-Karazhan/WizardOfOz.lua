@@ -1,11 +1,10 @@
 local mod	= DBM:NewMod("Oz", "DBM-Karazhan")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20250806215207")
+mod:SetRevision("20220518110528")
 mod:SetCreatureID(18168, 17535)
 --
 mod:SetModelID(17550)
-mod:SetEncounterID(655) -- Opera Hall
 mod:RegisterCombat("yell", L.DBM_OZ_YELL_DOROTHEE)
 mod:SetMinCombatTime(25)
 mod:SetWipeTime(30)
@@ -27,10 +26,10 @@ local warnBrainBash	= mod:NewTargetNoFilterAnnounce(31046, 2)
 local warnChain		= mod:NewSpellAnnounce(32337, 3)
 
 --local timerFearCD	= mod:NewCDTimer(19, 31013, nil, nil, nil, 2)
-local timerRoar		= mod:NewTimer(12+4.67, "DBM_OZ_WARN_ROAR", 5209, nil, false, 1)
-local timerStrawman	= mod:NewTimer(21+5.3, "DBM_OZ_WARN_STRAWMAN", 3606, nil, false, 1)
-local timerTinhead	= mod:NewTimer(29+5.47, "DBM_OZ_WARN_TINHEAD", 3183, nil, false, 1)
-local timerTito		= mod:NewTimer(47.5-6.5+11.7, "DBM_OZ_WARN_TITO", 459, nil, false, 1)
+local timerRoar		= mod:NewTimer(12+4.67, "DBM_OZ_WARN_ROAR", "132117", nil, false, 1)
+local timerStrawman	= mod:NewTimer(21+5.3, "DBM_OZ_WARN_STRAWMAN", "133136", nil, false, 1)
+local timerTinhead	= mod:NewTimer(29+5.47, "DBM_OZ_WARN_TINHEAD", "133070", nil, false, 1)
+local timerTito		= mod:NewTimer(47.5-6.5+11.7, "DBM_OZ_WARN_TITO", "132266", nil, false, 1)
 
 local timerCombatStart	= mod:NewCombatTimer(11.7)
 local timerFearCD		= mod:NewCDSourceTimer(20, 31013, nil, nil, nil, 2, nil)

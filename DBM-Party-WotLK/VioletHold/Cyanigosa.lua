@@ -1,9 +1,8 @@
 local mod	= DBM:NewMod("Cyanigosa", "DBM-Party-WotLK", 12)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20251130220131")
+mod:SetRevision("20220925180445")
 mod:SetCreatureID(31134)
-mod:SetEncounterID(545)
 
 mod:RegisterCombat("combat")
 
@@ -24,7 +23,7 @@ local specwarnMana		= mod:NewSpecialWarningDispel(59374, "Healer", nil, nil, 1, 
 
 local timerVacuumCD		= mod:NewCDTimer(35, 58694, nil, nil, nil, 2)
 local timerMana			= mod:NewTargetTimer(8, 59374, nil, "Healer", nil, 5, nil, DBM_COMMON_L.MAGIC_ICON)
-local timerCombat		= mod:NewCombatTimer(13)
+local timerCombat		= mod:NewCombatTimer(14)
 
 function mod:OnCombatStart(delay)
 	timerVacuumCD:Start(30 - delay)

@@ -4,7 +4,6 @@ local L		= mod:GetLocalizedStrings()
 mod:SetRevision("20260810820131")
 
 mod:SetCreatureID(32906)
-mod:SetEncounterID(753)
 mod:RegisterCombat("combat")
 mod:RegisterKill("yell", L.YellKill)
 mod:SetUsedIcons(4, 5, 6, 7, 8)
@@ -39,14 +38,14 @@ local timerEnrage				= mod:NewBerserkTimer(600)
 mod:AddTimerLine(DBM_CORE_L.SCENARIO_STAGE:format(1))
 local warnNatureFury			= mod:NewTargetAnnounce(63571, 2)
 
-local specWarnLifebinder		= mod:NewSpecialWarningSwitch(62584, "Dps", nil, nil, 1, 2) --actual spell id for the summon is 62869
+local specWarnLifebinder		= mod:NewSpecialWarningSwitch(62869, "Dps", nil, nil, 1, 2)
 local specWarnNatureFury		= mod:NewSpecialWarningMoveAway(63571, nil, nil, nil, 1, 2)
 local yellNatureFury			= mod:NewYell(63571)
 
-local timerAlliesOfNature		= mod:NewNextTimer(60, 62678, nil, nil, nil, 1, 62947, DBM_COMMON_L.IMPORTANT_ICON..DBM_COMMON_L.DAMAGE_ICON) --60s on AC
-local timerSimulKill			= mod:NewTimer(10, "TimerSimulKill", nil, nil, nil, 5, DBM_COMMON_L.DAMAGE_ICON, nil, nil, nil, nil, nil, nil, 62678) --10s on AC
-local timerNatureFury			= mod:NewTargetTimer(14, 63571, nil, nil, nil, 3) -- 14s on AC
-local timerLifebinderCD			= mod:NewCDTimer(45, 62584, nil, nil, nil, 1, nil, DBM_COMMON_L.IMPORTANT_ICON) --first 30s repeat 45s on AC
+local timerAlliesOfNature		= mod:NewNextTimer(60, 62678, nil, nil, nil, 1, 62947, DBM_COMMON_L.IMPORTANT_ICON..DBM_COMMON_L.DAMAGE_ICON) -- REVIEW! From retail: No longer has CD, they spawn instant last set is dead, and not a second sooner, except first set; 60s log reviewed (25 man HM log 2022/07/17)
+local timerSimulKill			= mod:NewTimer(12, "TimerSimulKill", nil, nil, nil, 5, DBM_COMMON_L.DAMAGE_ICON, nil, nil, nil, nil, nil, nil, 62678)
+local timerNatureFury			= mod:NewTargetTimer(7.9, 63571, nil, nil, nil, 3) -- ~5s variance (25 man HM log 2022/07/17) - 13.6, 7.9, 8.8, 11.7, 11.7, 12.9, 11.4
+local timerLifebinderCD			= mod:NewCDTimer(40, 62584, nil, nil, nil, 1, nil, DBM_COMMON_L.IMPORTANT_ICON) -- 10s variance (S2 VOD review || 25 man HM log 2022/07/17) - 40 || 42.7, 42.0; 46.8, 47.2
 
 mod:AddRangeFrameOption(8, 63571)
 mod:AddSetIconOption("SetIconOnFury", 63571, false, false, {7, 8})
@@ -61,6 +60,7 @@ local timerNextNatureBombSummon	= mod:NewNextTimer(18, 64587, 34539, nil, nil, 2
 
 -- Hard Mode
 mod:AddTimerLine(DBM_COMMON_L.HEROIC_ICON..DBM_CORE_L.HARD_MODE)
+local warnUnstableBeamSoon		= mod:NewSoonAnnounce(62865, 3) -- Hard mode Sun Beam Elder Brightleaf Alive
 local warnIronRoots				= mod:NewTargetNoFilterAnnounce(62438, 2) -- Hard mode Elder Ironbranch Alive
 local yellIronRoots				= mod:NewYell(62438)
 local timerIronRootsCD			= mod:NewCDTimer("v45-55", 62438, nil, nil, nil, 3) 		-- 45-55s variance on AC
@@ -93,7 +93,7 @@ function mod:OnCombatStart(delay)
 	timerEnrage:Start(-delay)
 	table.wipe(adds)
 	timerAlliesOfNature:Start(10-delay) -- 9.9
-	timerLifebinderCD:Start(30-delay) -- first 30s on AC
+	timerLifebinderCD:Start(25-delay) -- ~15s variance (could be more, insufficient data). (25 man HM log 2022/07/17) - 26.1, 39.7
 end
 
 function mod:OnCombatEnd(wipe)
@@ -151,15 +151,18 @@ function mod:SPELL_CAST_SUCCESS(args)
 	elseif args:IsSpellID(64587, 64650) then -- Nature Bomb
 		if self:AntiSpam(5, 64650) and self:IsInCombat() then
 			specWarnNatureBombSummon:Cancel()
-			specWarnNatureBombSummon:Schedule(12)
+			specWarnNatureBombSummon:Schedule(4) -- delay to max possible time to avoid warning before bombs are thrown
 			timerNextNatureBombSummon:Start()
-			--timerNatureBombExplosion:Start()
+			timerNatureBombExplosion:Start()
 		end
 	elseif spellId == 63601 then -- Strengthened Iron Roots
-		DBM:AddMsg("Strengthened Iron Roots unhidden from combat log. Notify Fivebuttons on Discord or GitHub")
+		DBM:AddMsg("Strengthened Iron Roots unhidden from combat log. Notify Zidras on Discord or GitHub") -- REVIEW! Strengthened Iron Roots never fired on Warmane. Instead there is only an emote event.
 		--if self.vb.phase == 2 then
-		timerIronRootsCD:Start()
+			timerIronRootsCD:Start()
 		--end
+	elseif args:IsSpellID(62451, 62865) and self:AntiSpam(5, 2) then -- Unstable Energy (Sun Beam)
+		timerUnstableBeamCD:Start()
+		warnUnstableBeamSoon:Schedule(12)
 	end
 end
 
@@ -191,7 +194,7 @@ function mod:SPELL_AURA_REMOVED(args)
 		self:SetStage(2)
 		timerNextNatureBombSummon:Start(6) -- 
 		specWarnNatureBombSummon:Schedule(8) -- delayed to the maximum timer possible
-		--timerNatureBombExplosion:Start(13.4) -- REVIEW! variance [?] (S3 HM log 2022/07/22) - 13.4
+		timerNatureBombExplosion:Start(13.4) -- REVIEW! variance [?] (S3 HM log 2022/07/22) - 13.4
 	elseif args:IsSpellID(62861, 62438) then
 		if self.Options.SetIconOnRoots then
 			self:RemoveIcon(args.destName)

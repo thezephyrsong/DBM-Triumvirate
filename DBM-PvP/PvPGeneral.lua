@@ -4,7 +4,7 @@ local L		= mod:GetLocalizedStrings()
 local DBM = DBM
 local AceTimer = LibStub("AceTimer-3.0")
 
-mod:SetRevision("20250328212421")
+mod:SetRevision("20220827002800")
 mod:SetZone(DBM_DISABLE_ZONE_DETECTION)
 
 mod:RegisterEvents(
@@ -262,8 +262,10 @@ local function UpdateFlagDisplay()
 			flagFrame2Text:SetText("")
 			flagButton2:SetAttribute("macrotext", "")
 		end
-		if allyFlag and hordeFlag and not vulnerableTimer:IsStarted() then -- WSG specific (no need to check mapID since only this BG has 2 flags)
+		if allyFlag and hordeFlag then
 			vulnerableTimer:Start()
+		else
+			vulnerableTimer:Cancel()
 		end
 	end
 end
@@ -540,11 +542,6 @@ do
 			return
 		end
 		local cId = DBM:GetCIDFromGUID(destGUID)
-		if not gatesHP[cId] then
-			DBM:Debug("SPELL_BUILDING_DAMAGE on ID: "..cId.." is not a tracked unit")
-			DBM:AddMsg("DBM-PvP missing gate data, please notify Zidras on Github or Discord - ID: "..cId.." and Name: "..destName)
-			return
-		end
 		if gatesHP[cId][1] == nil then -- first hit
 			if self.Options.ShowGatesHealth then
 				if not DBM.InfoFrame:IsShown() then
@@ -569,46 +566,46 @@ do
 		if not DBM.InfoFrame:IsShown() then return end
 		-- Gate of the Green Emerald
 		if msg == L.GreenEmeraldAttacked then
-			trackedUnits[190722] = L.GreenEmeraldAttackedTex
+			trackedUnits[59650] = L.GreenEmeraldAttackedTex
 		elseif msg == L.GreenEmeraldDestroyed then
-			trackedUnits[190722] = L.GreenEmeraldDestroyedTex
-			syncTrackedUnits[190722] = 0
-			gatesHP[190722][1] = 0
+			trackedUnits[59650] = L.GreenEmeraldDestroyedTex
+			syncTrackedUnits[59650] = 0
+			gatesHP[59650][1] = 0
 		-- Gate of the Blue Sapphire
 		elseif msg == L.BlueSapphireAttacked then
-			trackedUnits[190724] = L.BlueSapphireAttackedTex
+			trackedUnits[59652] = L.BlueSapphireAttackedTex
 		elseif msg == L.BlueSapphireDestroyed then
-			trackedUnits[190724] = L.BlueSapphireDestroyedTex
-			syncTrackedUnits[190724] = 0
-			gatesHP[190724][1] = 0
+			trackedUnits[59652] = L.BlueSapphireDestroyedTex
+			syncTrackedUnits[59652] = 0
+			gatesHP[59652][1] = 0
 		-- Gate of the Purple Amethyst
 		elseif msg == L.PurpleAmethystAttacked then
-			trackedUnits[190723] = L.PurpleAmethystAttackedTex
+			trackedUnits[59651] = L.PurpleAmethystAttackedTex
 		elseif msg == L.PurpleAmethystDestroyed then
-			trackedUnits[190723] = L.PurpleAmethystDestroyedTex
-			syncTrackedUnits[190723] = 0
-			gatesHP[190723][1] = 0
+			trackedUnits[59651] = L.PurpleAmethystDestroyedTex
+			syncTrackedUnits[59651] = 0
+			gatesHP[59651][1] = 0
 		-- Gate of the Red Sun
 		elseif msg == L.RedSunAttacked then
-			trackedUnits[190726] = L.RedSunAttackedTex
+			trackedUnits[59654] = L.RedSunAttackedTex
 		elseif msg == L.RedSunDestroyed then
-			trackedUnits[190726] = L.RedSunDestroyedTex
-			syncTrackedUnits[190726] = 0
-			gatesHP[190726][1] = 0
+			trackedUnits[59654] = L.RedSunDestroyedTex
+			syncTrackedUnits[59654] = 0
+			gatesHP[59654][1] = 0
 		-- Gate of the Yellow Moon
 		elseif msg == L.YellowMoonAttacked then
-			trackedUnits[190727] = L.YellowMoonAttackedTex
+			trackedUnits[59655] = L.YellowMoonAttackedTex
 		elseif msg == L.YellowMoonDestroyed then
-			trackedUnits[190727] = L.YellowMoonDestroyedTex
-			syncTrackedUnits[190727] = 0
-			gatesHP[190727][1] = 0
+			trackedUnits[59655] = L.YellowMoonDestroyedTex
+			syncTrackedUnits[59655] = 0
+			gatesHP[59655][1] = 0
 		-- Chamber of Ancient Relics
 		elseif msg == L.ChamberAncientRelicsAttacked then
-			trackedUnits[192549] = L.ChamberAncientRelicsAttackedTex
+			trackedUnits[61477] = L.ChamberAncientRelicsAttackedTex
 		elseif msg == L.ChamberAncientRelicsDestroyed then
-			trackedUnits[192549] = L.ChamberAncientRelicsDestroyedTex
-			syncTrackedUnits[192549] = 0
-			gatesHP[192549][1] = 0
+			trackedUnits[61477] = L.ChamberAncientRelicsDestroyedTex
+			syncTrackedUnits[61477] = 0
+			gatesHP[61477][1] = 0
 		end
 	end
 
@@ -753,13 +750,10 @@ do
 		elseif msg == L.Start15 or msg == L.Start15TC then
 			startTimer:Update(45, 60)
 			timerShadow:Schedule(15)
-		elseif smatch(msg, L.FlagReset) or smatch(msg, L.FlagResetTC) then
-			vulnerableTimer:Cancel()
-			if self.Options.ShowFlagCarrier then
-				allyFlag = nil
-				hordeFlag = nil
-				UpdateFlagDisplay()
-			end
+		elseif self.Options.ShowFlagCarrier and (smatch(msg, L.FlagReset) or smatch(msg, L.FlagResetTC)) then
+			allyFlag = nil
+			hordeFlag = nil
+			UpdateFlagDisplay()
 		-- Isle of Conquest Gates
 		elseif self.Options.ShowGatesHealth then
 			-- Horde Front Gate
@@ -1038,23 +1032,7 @@ do
 						hordeBases = hordeBases + 1
 					end
 				end
-
-				local isEotS = subscribedMapID == 483
-				local allyIndex = isEotS and 2 or 1
-				local hordeIndex = isEotS and 3 or 2
-
-				-- ex ab: "Bases: 0 Resources: 0/1600"
-				local allyScoreText = select(3, GetWorldStateUIInfo(allyIndex)) or ""
-				local hordeScoreText = select(3, GetWorldStateUIInfo(hordeIndex)) or ""
-
-				local allyCurrent, maxResources = smatch(allyScoreText, "(%d+)/(%d+)")
-				allyCurrent = tonumber(allyCurrent) or 0
-				maxResources = tonumber(maxResources) or 1600
-
-				local hordeCurrent = smatch(hordeScoreText, "(%d+)/")
-				hordeCurrent = tonumber(hordeCurrent) or 0
-
-				self:UpdateWinTimer(maxResources, allyCurrent, hordeCurrent, allyBases, hordeBases)
+				self:UpdateWinTimer(1600, tonumber(smatch((select(3, GetWorldStateUIInfo(subscribedMapID == 483 and 2 or 1)) or ""), "(%d+)/1600")) or 0, tonumber(smatch((select(3, GetWorldStateUIInfo(subscribedMapID == 483 and 3 or 2)) or ""), "(%d+)/1600")) or 0, allyBases, hordeBases)
 			end
 		end
 	end

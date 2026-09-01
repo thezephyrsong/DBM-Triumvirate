@@ -1,10 +1,8 @@
 local mod	= DBM:NewMod("Sapphiron", "DBM-Naxx", 5)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260222224400")
+mod:SetRevision("20221016192235")
 mod:SetCreatureID(15989)
-mod:SetEncounterID(1119)
-mod:SetHotfixNoticeRev(20260413224400)
 mod:SetMinSyncRevision(20220904000000)
 
 mod:RegisterCombat("combat")
@@ -15,7 +13,7 @@ mod:RegisterEventsInCombat(
 	"SPELL_CAST_SUCCESS 28542 55665 28560 55696",
 	"SPELL_AURA_APPLIED 28522 28547 55699",
 	"CHAT_MSG_RAID_BOSS_EMOTE",
-	"UNIT_HEALTH"
+	"UNIT_HEALTH boss1"
 )
 
 --TODO, verify SPELL_CAST_START on retail to switch to it over emote, same as classicc era was done
@@ -36,9 +34,9 @@ local warnBlizzard		= mod:NewSpellAnnounce(28560, 4)
 local specWarnBlizzard	= mod:NewSpecialWarningGTFO(28547, nil, nil, nil, 1, 8)
 
 local timerDrainLife	= mod:NewCDTimer(24, 28542, nil, nil, nil, 3, nil, DBM_COMMON_L.CURSE_ICON) -- (25man Lordaeron 2022/09/02) - 24.0
-local timerAirPhase		= mod:NewTimer(55, "TimerAir", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp", nil, nil, 6)
-local timerBlizzard		= mod:NewNextTimer(6.5, 28560, nil, nil, nil, 3)
-local timerTailSweep	= mod:NewNextTimer(10, 55696, nil, nil, nil, 2)
+local timerAirPhase		= mod:NewTimer(60, "TimerAir", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendUnBurrow.blp", nil, nil, 6)
+local timerBlizzard		= mod:NewNextTimer(7, 28560, nil, nil, nil, 3)
+local timerTailSweep	= mod:NewNextTimer(9, 55696, nil, nil, nil, 2)
 
 -- Stage Two (Air Phase)
 mod:AddTimerLine(DBM_CORE_L.SCENARIO_STAGE:format(2))
@@ -48,8 +46,8 @@ local warnIceBlock		= mod:NewTargetAnnounce(28522, 2)
 local specWarnDeepBreath= mod:NewSpecialWarningSpell(28524, nil, nil, nil, 1, 2)
 local yellIceBlock		= mod:NewYell(28522)
 
-local timerLanding		= mod:NewTimer(20.5, "TimerLanding", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendBurrow.blp", nil, nil, 6)
-local timerIceBlast 	= mod:NewCastTimer(8.5, 28524, nil, nil, nil, 2, nil, DBM_COMMON_L.DEADLY_ICON)
+local timerLanding		= mod:NewTimer(24.2, "TimerLanding", "Interface\\AddOns\\DBM-Core\\textures\\CryptFiendBurrow.blp", nil, nil, 6)
+local timerIceBlast		= mod:NewCastTimer(8, 28524, nil, nil, nil, 2, DBM_COMMON_L.DEADLY_ICON)
 
 mod:AddRangeFrameOption("12")
 
@@ -62,30 +60,30 @@ mod.vb.isFlying = false
 	self.vb.isFlying = false
 end]]
 
---[[local function Landing(self)
+local function Landing(self)
 	self:SetStage(1)
 	warnLanded:Show()
 	warnDrainLifeSoon:Schedule(5)
 	timerDrainLife:Start(10.5)
 	warnAirPhaseSoon:Schedule(50)
-	timerAirPhase:Cancel()  -- cancel any existing timer
 	timerAirPhase:Start()
 	if self.Options.RangeFrame then
 		DBM.RangeCheck:Hide()
 		self:Schedule(59, DBM.RangeCheck.Show, DBM.RangeCheck, 12)
 	end
-end]]
+end
+
 function mod:OnCombatStart(delay)
 --	noTargetTime = 0
 	warned_lowhp = false
 	self:SetStage(1)
 	self.vb.isFlying = false
 	warnDrainLifeSoon:Schedule(6.5-delay)
-	timerDrainLife:Start(17-delay)
-	timerBlizzard:Start(17-delay)
+	timerDrainLife:Start(12-delay) -- (25man Lordaeron 2022/09/02) - 12.0
+	timerBlizzard:Start(6.1-delay) -- REVIEW! ~3s variance? (25man Lordaeron 2022/09/02 || 25man Lordaeron 2022/10/16) - 8.8 || 6.1
 	timerTailSweep:Start(-delay)
-	warnAirPhaseSoon:Schedule(35.74-delay)
-	timerAirPhase:Start(45.74-delay)
+	warnAirPhaseSoon:Schedule(38.4-delay)
+	timerAirPhase:Start(48.4-delay) -- REVIEW! ~0.1s variance? (25man Lordaeron 2022/09/02) - 48.4
 	berserkTimer:Start(-delay)
 	if self.Options.RangeFrame then
 		self:Schedule(46-delay, DBM.RangeCheck.Show, DBM.RangeCheck, 12)
@@ -156,13 +154,8 @@ function mod:SPELL_CAST_SUCCESS(args)
 		warnDrainLifeSoon:Schedule(18.5)
 		timerDrainLife:Start()
 	elseif spellId == 28560 then
-		DBM:AddMsg("Blizzard SPELL_CAST_SUCCESS unhidden from combat log. Notify Fivebuttons on Discord or GitHub")
 		warnBlizzard:Show()
-		if self:IsHeroic() then
-			timerBlizzard:Start(6.5) -- 25-man
-		else
-			timerBlizzard:Start(8) -- 10-man
-		end
+		timerBlizzard:Start()
 	elseif spellId == 55696 then
 		timerTailSweep:Start()
 	end
@@ -170,40 +163,39 @@ end
 
 function mod:CHAT_MSG_RAID_BOSS_EMOTE(msg)
 	if msg == L.EmoteBreath or msg:find(L.EmoteBreath) then
+--		self:SendSync("DeepBreath") -- this does not need syncing and spam comms
 		timerIceBlast:Start()
-		timerLanding:Update(6, 20.1)
+		timerLanding:Update(13.5) -- 8s until breath + 3.5s until emote + ~2s until UNIT_TARGET
 		specWarnDeepBreath:Show()
 		specWarnDeepBreath:Play("findshelter")
 	elseif msg == L.AirPhase or msg:find(L.AirPhase) then
 		self:SetStage(2)
 		self.vb.isFlying = true
-		timerDrainLife:AddTime(35) --all abilities are delayed by 35 seconds on AC
-		self:Unschedule(warnDrainLifeSoon.Show, warnDrainLifeSoon)
-		warnDrainLifeSoon:Schedule(timerDrainLife:GetRemaining() - 5.5)-- Add 35 seconds to the timer
+		timerDrainLife:Cancel()
 		timerAirPhase:Cancel()
 		warnAirPhaseNow:Show()
 		timerLanding:Start()
 	elseif msg == L.LandingPhase or msg:find(L.LandingPhase) then
-		self:SetStage(1)
 		self.vb.isFlying = false
-		warnLanded:Show()
-		warnAirPhaseSoon:Schedule(50)
-		timerAirPhase:Cancel()
-		timerAirPhase:Start()
-		if self.Options.RangeFrame then
-			DBM.RangeCheck:Hide()
-			self:Schedule(59, DBM.RangeCheck.Show, DBM.RangeCheck, 12)
-		end
+		self:RegisterShortTermEvents(
+			"UNIT_TARGET boss1"
+		)
 	end
 end
 
 function mod:UNIT_HEALTH(uId)
-	local cid = self:GetUnitCreatureId(uId)
-	if cid == 15989 and not warned_lowhp and UnitHealth(uId) / UnitHealthMax(uId) < 0.1 then
+	if not warned_lowhp and self:GetUnitCreatureId(uId) == 15989 and UnitHealth(uId) / UnitHealthMax(uId) < 0.1 then
 		warned_lowhp = true
 		specWarnLowHP:Show()
 		timerAirPhase:Cancel()
-		self:Unschedule(warnAirPhaseSoon.Show, warnAirPhaseSoon)
+	end
+end
+
+function mod:UNIT_TARGET(uId)
+	-- Apparently there's a delay after emote where boss is actually engaged (TC has 3.5s). From S3 Naxx videos this is somewhat still accurate, so check when boss retargets raid member, which is when land phase script restarts
+	if UnitExists(uId.."target") then
+		Landing(self)
+		self:UnregisterShortTermEvents()
 	end
 end
 

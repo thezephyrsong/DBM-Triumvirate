@@ -1,4 +1,4 @@
-if GetLocale() ~= "esES" then return end
+if GetLocale() ~= "esES" and GetLocale() ~= "esMX" then return end
 local L
 
 -----------------
@@ -283,9 +283,7 @@ L:SetMiscLocalization({
 	WarningWave3	= "%d %s, %d %s y %d %s",
 	Trainee			= "practicantes",
 	Knight			= "caballeros",
-	Rider			= "jinetes",
-	GothikDoorEmote	= "¡La puerta central se abre!",
-	GothikPhase2Yell= "Ya he esperado suficiente. Ahora os enfrentaréis al Recolector de almas."
+	Rider			= "jinetes"
 })
 
 ------------------------
@@ -365,8 +363,7 @@ L:SetGeneralLocalization({
 
 L:SetWarningLocalization({
 	specwarnP2Soon	= "Fase 2 en 10 s",
-	warnAddsSoon	= "Guardianes de Corona de Hielo en breve",
-	WeaponsStatus	= "Desequipar automático habilitado: %s (%s - %s)"
+	warnAddsSoon	= "Guardianes de Corona de Hielo en breve"
 })
 
 L:SetTimerLocalization({
@@ -377,9 +374,8 @@ L:SetOptionLocalization({
 	TimerPhase2			= "Mostrar temporizador para el cambio a Fase 2",
 	specwarnP2Soon		= "Mostrar aviso especial 10 s antes del cambio a Fase 2",
 	warnAddsSoon		= "Mostrar aviso previo para cuando aparezcan los Guardianes de Corona de Hielo",
-	WeaponsStatus		= "Advertencia especial al inicio del combate si la función desequipar/equipar está habilitada",
-	EqUneqWeaponsKT		= "Desequipar y equipar armas automáticamente con temporizador, antes y después del $spell:28410. Requiere equipamiento llamado \"pve\"",
-	EqUneqWeaponsKT2	= "Desequipar y equipar armas automáticamente cuando se lanza $spell:28410 sobre USTED. Requiere equipamiento llamado \"pve\"",
+	EqUneqWeaponsKT		= "Desequipar y equipar armas automáticamente antes y después del $spell:28410. Requiere equipamiento llamado \"pve\"",
+	EqUneqWeaponsKT2	= "Desequipar y equipar armas automáticamente cuando se lanza $spell:28410 sobre USTED",
 	RemoveBuffsOnMC		= "Elimina los buffs cuando $spell:28410 es lanzado sobre ti. Cada opción es acumulativa",
 	Gift				= "Eliminar $spell:48469 / $spell:48470. Enfoque mínimo para evitar que $spell:33786 se resista",
 	CCFree				= "+ Eliminar $spell:48169 / $spell:48170. Tener en cuenta las resistencias de los hechizos de la escuela Sombra",
@@ -389,11 +385,6 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Yell		= "¡Esbirros, sirvientes, soldados de la fría oscuridad! ¡Obedeced la llamada de Kel'Thuzad!",
-	Yell1Phase2	= "¡Pedid misericordia!", -- 12995
-	Yell2Phase2	= "¡Gritad antes de vuestro último suspiro!", -- 12996
-	Yell3Phase2	= "¡Vuestra hora ha llegado!", -- 12997
-	YellPhase3	= "¡Maestro, necesito ayuda!", -- 12998
-	YellGuardians	= "Muy bien. ¡Guerreros del desierto helado! ¡Levantaos, os ordeno luchar, matar y morir por vuestro maestro! ¡Que no sobreviva ninguno!", -- 12994
 	setMissing	= "¡ATENCIÓN! El desequipamiento / equipamiento automático de armas de DBM no funcionará hasta que cree un equipamiento llamado pve",
 	EqUneqLineDescription	= "Equipar/desequipar automático"
 })
