@@ -3,7 +3,7 @@ local L		= LichKing:GetLocalizedStrings()
 local floor = math.floor
 
 function LichKing:InitializeMenu()
-
+--	self is DBMLichKingMenu, not LichKing
 	local info = UIDropDownMenu_CreateInfo()
 	info.text = L.name
 	info.notClickable = 1
