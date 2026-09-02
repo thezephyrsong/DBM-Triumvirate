@@ -44,7 +44,7 @@
 			<AbsDimension x="10" y="10"/>
 		</Size>
 		<Anchors>
-			<Anchor point="BOTTOM" relativeto="DBMLichKingFrameDrag">
+			<Anchor point="BOTTOM" relativeTo="DBMLichKingFrameDrag">
 				<Offset>
 					<AbsDimension x="0" y="-50"/>
 				</Offset>
@@ -153,7 +153,10 @@
 						self:SetMinMaxValues(0, 35)
 					</OnLoad>
 					<OnUpdate>
-						self:GetParent().entry:Update(elapsed)
+						local entry = self:GetParent().entry
+						if entry then
+							entry:Update(elapsed)
+						end
 					</OnUpdate>
 				</Scripts>
 			</StatusBar>

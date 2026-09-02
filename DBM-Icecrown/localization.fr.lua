@@ -2,18 +2,12 @@ if GetLocale() ~= "frFR" then return end
 
 local L
 
-----------------------
---  Lord Marrowgar  --
-----------------------
 L = DBM:GetModLocalization("LordMarrowgar")
 
 L:SetGeneralLocalization({
 	name = "Seigneur Gargamoelle"
 })
 
--------------------------
---  Lady Deathwhisper  --
--------------------------
 L = DBM:GetModLocalization("Deathwhisper")
 
 L:SetGeneralLocalization({
@@ -28,7 +22,7 @@ L:SetWarningLocalization({
 	WarnReanimating				= "Les adds revivent",
 	WarnAddsSoon				= "Nouveaux adds bientôt",
 	SpecWarnVengefulShade		= "Ombre vengeresse vous attaque - COUREZ",
-	WeaponsStatus				= "Auto-déséquipement activé: %s (%s - %s)"
+	WeaponsStatus				= "Auto-déséquipement activé"
 })
 
 L:SetOptionLocalization({
@@ -39,7 +33,7 @@ L:SetOptionLocalization({
 	WeaponsStatus				= "Alerte spéciale si la fonction de déséquipement n'est pas active au début du combat",
 	ShieldHealthFrame			= "Montre la vie du boss avec une barre de vie pour la $spell:70842",
 	SoundWarnCountingMC			= "Jouer un son à 5 secondes du Contrôle mental",
---	RemoveDruidBuff				= "Retire $spell:48469 / $spell:48470 24 secondes après le début du combat",
+
 	RemoveBuffsOnMC				= "Retirez les buffs lorsque $spell:71289 est lancé sur vous. Chaque option est cumulative.",
 	Gift						= "Supprimer $spell:48469 / $spell:48470. Approche minimale pour éviter $spell:33786 résistances.",
 	CCFree						= "+ Supprimer $spell:48169 / $spell:48170. Tient compte des résistances des sorts de l'école de l'ombre.",
@@ -51,17 +45,13 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "Lève-toi, dans l'exultation de cette nouvelle pureté",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "Barrière de mana",
---	Fanatic1				= "Membres du culte",
---	Fanatic2				= "Fanatique déformé",
---	Fanatic3				= "Fanatique réanimé",
+
 	setMissing				= "ATTENTION! DBM auto-déséquipement d'arme ne fonctionnera pas tant que vous n'aurez pas créer un set apellé pve",
 	EqUneqLineDescription	= "Équiper/Déséquiper automatiquement"
 })
 
-----------------------
---  Gunship Battle  --
-----------------------
 L = DBM:GetModLocalization("GunshipBattle")
 
 L:SetGeneralLocalization({
@@ -92,9 +82,6 @@ L:SetMiscLocalization({
 	KillHorde		= "L'Alliance baisse pavillon. Sus au roi-liche !"
 })
 
------------------------------
---  Deathbringer Saurfang  --
------------------------------
 L = DBM:GetModLocalization("Deathbringer")
 
 L:SetGeneralLocalization({
@@ -103,18 +90,16 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	RunePowerFrame		= "Montre la barre de vie du boss + la barre de $spell:72371",
---	RemoveDI			= "Supprimez $spell:19752 s'il est utilisé pour empêcher le lancement du sort $spell:72293."
+
 })
 
 L:SetMiscLocalization({
 	RunePower			= "Bêtes de sang",
 	PullAlliance		= "Bon allez, on se bouge",
-	PullHorde			= "Kor'krons, en route ! Champions, surveillez bien vos arrières. Le Fléau a été -"
+	PullHorde			= "Kor'krons, en route ! Champions, surveillez bien vos arrières. Le Fléau a été -",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
------------------
---  Festergut  --
------------------
 L = DBM:GetModLocalization("Festergut")
 
 L:SetGeneralLocalization({
@@ -131,9 +116,6 @@ L:SetWarningLocalization({
 	AchievementFailed	= ">> HAUT-FAIT ÉCHOUÉ : %s a %d stacks d'Inoculé <<"
 })
 
----------------
---  Rotface  --
----------------
 L = DBM:GetModLocalization("Rotface")
 
 L:SetGeneralLocalization({
@@ -153,40 +135,20 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	YellSlimePipes1				= "réparé le distributeur de poison",	-- Professor Putricide
-	YellSlimePipes2				= "Great news, everyone! The slime is flowing again!"	-- Professor Putricide
+	YellSlimePipes1				= "réparé le distributeur de poison",
+	YellSlimePipes2				= "Great news, everyone! The slime is flowing again!"
 })
 
----------------------------
---  Professor Putricide  --
----------------------------
 L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "Professeur Putricide"
 })
 
-L:SetWarningLocalization({
-	WarnReengage			= "%s: Ré-engagement"
-})
-
-L:SetTimerLocalization({
-	TimerReengage			= "Ré-engagement"
-})
-
---[[L:SetOptionLocalization({
-	WarnReengage			= "Show warning for Boss re-engage", -- needs localization
-	TimerReengage			= "Show timer for Boss re-engage" -- needs localization
-})]]
-
 L:SetMiscLocalization({
-	YellTransform1			= "Mmm, je ne sens plus rien. Woah ?! Mais ça vient d'où, tout ça ?",
-	YellTransform2			= "Au bon goût de… Cerise ! Oups ! Pardon !"
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
-----------------------------
---  Blood Prince Council  --
-----------------------------
 L = DBM:GetModLocalization("BPCouncil")
 
 L:SetGeneralLocalization({
@@ -218,9 +180,6 @@ L:SetMiscLocalization({
 	EmpoweredFlames		= "L'Embrasement surpuissant (%S+)!"
 })
 
------------------------------
---  Blood-Queen Lana'thel  --
------------------------------
 L = DBM:GetModLocalization("Lanathel")
 
 L:SetGeneralLocalization({
@@ -232,9 +191,6 @@ L:SetMiscLocalization({
 	YellFrenzy				= "J'ai faim!"
 })
 
------------------------------
---  Valithria Dreamwalker  --
------------------------------
 L = DBM:GetModLocalization("Valithria")
 
 L:SetGeneralLocalization({
@@ -264,9 +220,6 @@ L:SetMiscLocalization({
 	YellPortals		= "J'ai ouvert un portail vers le Rêve. Vous y trouverez votre salut, héros…"
 })
 
-------------------
---  Sindragosa  --
-------------------
 L = DBM:GetModLocalization("Sindragosa")
 
 L:SetGeneralLocalization({
@@ -299,16 +252,13 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	YellAirphase		= "Votre incursion s'arrête ici",
 	YellPhase2			= "Sentez maintenant le pouvoir infini de mon",
-	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
-	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
+	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",
+	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",
 	BeaconIconSet		= "Icône de Guide de givre {rt%d} mis sur %s",
 	AchievementWarning	= "Alerte : %s à 5 stacks de Rafale mystique",
 	AchievementFailed	= ">> HAUT-FAIT ÉCHOUÉ : %s à %d stacks de Rafale mystique <<",
 })
 
----------------------
---  The Lich King  --
----------------------
 L = DBM:GetModLocalization("LichKing")
 
 L:SetGeneralLocalization({
@@ -334,7 +284,7 @@ L:SetOptionLocalization({
 	TimerNecroticPlagueCleanse	= "Montre le timer pour dispell la Peste nécrotique avant le premier tic",
 	PhaseTransition				= "Montre le timer pour la phase de transition",
 	ValkyrWarning				= "Annonce qui a été saisi par les Gardes de l'ombre val'kyr",
-	SpecWarnYouAreValkd			= "Affiche une alerte spéciale lorsque vous avez été pris par une Garde de l'ombre val'kyr",--npc36609
+	SpecWarnYouAreValkd			= "Affiche une alerte spéciale lorsque vous avez été pris par une Garde de l'ombre val'kyr",
 	AnnounceValkGrabs			= "Annonce les cibles prises par les Gardes de l'ombre val'kyr\n(nécessite un statut promu)",
 	SpecWarnValkyrLow			= "Affiche une alerte spéciale lorsque la Garde de l'ombre val'kyr est sous les 55% PDV",
 	AnnouncePlagueStack			= "Annonce les $spell:73912 stacks au raid (10 stacks, toutes les 5 après 10)\n(nécessite un statut promu)",
@@ -347,6 +297,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "Voici donc qu’arrive la fameuse justice de la Lumière ? Dois-je déposer Deuillegivre et me jeter à tes pieds en implorant pitié, Fordring ?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "Est-ce vraiment la justice qui vous anime ? Je me demande…",
 	ValkGrabbedIcon			= "Gardes de l'ombre val'kyr {rt%d} a pris %s",
 	ValkGrabbed				= "Gardes de l'ombre val'kyr a pris %s",
@@ -362,9 +315,6 @@ L:SetMiscLocalization({
 	FrameGUIMoveMe			= "Déplacer le cadre Val'Kyr"
 })
 
--------------
---  Trash  --
--------------
 L = DBM:GetModLocalization("ICCTrash")
 
 L:SetGeneralLocalization({

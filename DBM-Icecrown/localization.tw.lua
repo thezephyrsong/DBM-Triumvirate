@@ -2,18 +2,12 @@ if GetLocale() ~= "zhTW" then return end
 
 local L
 
-----------------------
---  Lord Marrowgar  --
-----------------------
 L = DBM:GetModLocalization("LordMarrowgar")
 
 L:SetGeneralLocalization({
 	name = "瑪洛嘉領主"
 })
 
--------------------------
---  Lady Deathwhisper  --
--------------------------
 L = DBM:GetModLocalization("Deathwhisper")
 
 L:SetGeneralLocalization({
@@ -28,7 +22,7 @@ L:SetWarningLocalization({
 	WarnReanimating				= "小怪再活化",
 	WarnAddsSoon				= "新的小怪即將到來",
 	SpecWarnVengefulShade		= "你被復仇的暗影盯上了 - 快跑開",
-	WeaponsStatus				= "自動武器卸載/裝備已啟用: %s (%s - %s)"
+	WeaponsStatus				= "自動武器卸載/裝備已啟用"
 })
 
 L:SetOptionLocalization({
@@ -38,7 +32,7 @@ L:SetOptionLocalization({
 	SpecWarnVengefulShade		= "當你被復仇的暗影盯上時顯示特別警告",
 	WeaponsStatus				= "戰鬥開始時提示自動武器卸載/裝備功能已啟用",
 	ShieldHealthFrame			= "為$spell:70842顯示首領血量框架",
---	RemoveDruidBuff				= "戰鬥開始24秒後自動移除野性印記/野性賜福",
+
 	RemoveBuffsOnMC				= "當 $spell:71289 對你施放時移除增益。每個選項都是累積的。",
 	Gift						= "移除 $spell:48469 / $spell:48470。防止 $spell:33786 抵抗的最小方法。",
 	CCFree						= "+ 移除 $spell:48169 / $spell:48170。說明影子學派的法術抗性。",
@@ -50,17 +44,13 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	YellReanimatedFanatic	= "起來，在純粹的形態中感受狂喜!",
+	YellDominateMind		= "You are weak, powerless to resist my will!",
 	ShieldPercent			= "法力屏障",
---	Fanatic1				= "神教狂熱者",
---	Fanatic2				= "畸形的狂熱者",
---	Fanatic3				= "再活化的狂熱者",
+
 	setMissing				= "注意力！ 在您創建名為 pve 的裝備集之前，DBM 自動武器卸載/裝備將不起作用，pve裝備集為全套裝備及武器",
 	EqUneqLineDescription	= "自動裝備/取消裝備"
 })
 
-----------------------
---  Gunship Battle  --
-----------------------
 L = DBM:GetModLocalization("GunshipBattle")
 
 L:SetGeneralLocalization({
@@ -91,9 +81,6 @@ L:SetMiscLocalization({
 	KillHorde		= "聯盟已經動搖了。向巫妖王前進!"
 })
 
------------------------------
---  Deathbringer Saurfang  --
------------------------------
 L = DBM:GetModLocalization("Deathbringer")
 
 L:SetGeneralLocalization({
@@ -102,18 +89,16 @@ L:SetGeneralLocalization({
 
 L:SetOptionLocalization({
 	RunePowerFrame		= "顯示首領血量及$spell:72371條",
---	RemoveDI			= "清除 $spell:19752 如果用於防止 $spell:72293"
+
 })
 
 L:SetMiscLocalization({
 	RunePower			= "血魄威能",
 	PullAlliance		= "每個你殺死的部落士兵 -- 每條死去的聯盟狗，都讓巫妖王的軍隊隨之增長。此時此刻華爾琪都還在把你們倒下的同伴復活成天譴軍。",
-	PullHorde			= "柯爾克隆，前進!勇士們，要當心，天譴軍團已經..."
+	PullHorde			= "柯爾克隆，前進!勇士們，要當心，天譴軍團已經...",
+	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 
------------------
---  Festergut  --
------------------
 L = DBM:GetModLocalization("Festergut")
 
 L:SetGeneralLocalization({
@@ -130,9 +115,6 @@ L:SetMiscLocalization({
 	AchievementFailed	= ">> 成就失敗: %s中了%d層孢子 <<"
 })
 
----------------
---  Rotface  --
----------------
 L = DBM:GetModLocalization("Rotface")
 
 L:SetGeneralLocalization({
@@ -155,36 +137,16 @@ L:SetMiscLocalization({
 	YellSlimePipes2	= "大夥聽著，超級好消息!軟泥又開始流動了!"
 })
 
----------------------------
---  Professor Putricide  --
----------------------------
 L = DBM:GetModLocalization("Putricide")
 
 L:SetGeneralLocalization({
 	name = "普崔希德教授"
 })
 
-L:SetWarningLocalization({
-	WarnReengage			= "%s: 重新加入"
-})
-
-L:SetTimerLocalization({
-	TimerReengage			= "重新加入"
-})
-
---[[L:SetOptionLocalization({
-	WarnReengage			= "Show warning for Boss re-engage", -- needs localization
-	TimerReengage			= "Show timer for Boss re-engage" -- needs localization
-})]]
-
 L:SetMiscLocalization({
-	YellTransform1			= "嗯，我看不出來有何不同。啊?!這些東西從哪來的?",
-	YellTransform2			= "嚐起來像是...櫻桃!喔!抱歉!"
+	YellTransitionHeroic	= "Two oozes, one room. So many delightful possibilities!"
 })
 
-----------------------------
---  Blood Prince Council  --
-----------------------------
 L = DBM:GetModLocalization("BPCouncil")
 
 L:SetGeneralLocalization({
@@ -216,9 +178,6 @@ L:SetMiscLocalization({
 	EmpoweredFlames		= "煉獄烈焰加速靠近(%S+)!"
 })
 
------------------------------
---  Blood-Queen Lana'thel  --
------------------------------
 L = DBM:GetModLocalization("Lanathel")
 
 L:SetGeneralLocalization({
@@ -230,9 +189,6 @@ L:SetMiscLocalization({
 	YellFrenzy				= "我餓了!"
 })
 
------------------------------
---  Valithria Dreamwalker  --
------------------------------
 L = DBM:GetModLocalization("Valithria")
 
 L:SetGeneralLocalization({
@@ -262,9 +218,6 @@ L:SetMiscLocalization({
 	YellPortals		= "我打開了一道傳送門通往夢境。你們的救贖就在其中，英雄們..."
 })
 
-------------------
---  Sindragosa  --
-------------------
 L = DBM:GetModLocalization("Sindragosa")
 
 L:SetGeneralLocalization({
@@ -297,16 +250,13 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	YellAirphase		= "你們的入侵將在此終止!誰也別想存活!",
 	YellPhase2			= "現在，絕望地感受我主無限的力量吧!",
-	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
-	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",--Demonic, since curse of tonges is used by some guilds and it messes up yell detection.
+	YellAirphaseDem		= "Rikk zilthuras rikk zila Aman adare tiriosh ",
+	YellPhase2Dem		= "Zar kiel xi romathIs zilthuras revos ruk toralar ",
 	BeaconIconSet		= "冰霜信標{rt%d}: %s",
 	AchievementWarning	= "警告: %s中了5層秘能連擊",
 	AchievementFailed	= ">> 成就失敗: %s中了%d層秘能連擊 <<"
 })
 
----------------------
---  The Lich King  --
----------------------
 L = DBM:GetModLocalization("LichKing")
 
 L:SetGeneralLocalization({
@@ -345,6 +295,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	LKPull					= "聖光所謂的正義終於來了嗎?我是否該把霜之哀傷放下，祈求你的寬恕呢，弗丁?",
+	YellValkyr				= "Val'kyr, your master calls!",
+	YellWinter				= "I will freeze you from within until all that remains is an icy husk.",
+	YellQuake				= "Watch as the world around you collapses!",
 	LKRoleplay				= "你們的原動力真的是正義感嗎?我很懷疑...",
 	ValkGrabbedIcon			= "華爾琪影衛{rt%d}抓住了%s",
 	ValkGrabbed				= "華爾琪影衛抓住了%s",
@@ -360,9 +313,6 @@ L:SetMiscLocalization({
 	FrameGUIMoveMe			= "移動華爾琪框架"
 })
 
--------------
---  Trash  --
--------------
 L = DBM:GetModLocalization("ICCTrash")
 
 L:SetGeneralLocalization({

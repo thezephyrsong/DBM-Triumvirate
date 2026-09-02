@@ -3,7 +3,7 @@ local L		= LichKing:GetLocalizedStrings()
 local floor = math.floor
 
 function LichKing:InitializeMenu()
---	self is DBMLichKingMenu, not LichKing
+
 	local info = UIDropDownMenu_CreateInfo()
 	info.text = L.name
 	info.notClickable = 1
@@ -94,6 +94,7 @@ local function createBar(name, grp, rt)
 end
 
 function barMethods:Update(elapsed)
+	if not self.data then return end
 	local bar = _G[self.data.frame:GetName().."Bar"]
 	local cooldown = _G[self.data.frame:GetName().."BarCooldown"]
 	local spark = _G[self.data.frame:GetName().."BarSpark"]
@@ -189,7 +190,7 @@ function LichKing:UpdateColors()
 		local entry = firstEntry
 		while entry do
 			if self.Options.FrameClassColor then
-				local _, _, name = entry.data.name:find("(.+) %(%d%)")
+				local name = entry.data.name
 				local class
 				for uId in DBM:GetGroupMembers() do
 					local name2 = UnitName(uId)
@@ -200,12 +201,10 @@ function LichKing:UpdateColors()
 					end
 				end
 				local r, g, b = 1, 0.7, 0
-				if self.Options.FrameClassColor then
-					if RAID_CLASS_COLORS[class or ""] then
-						r = RAID_CLASS_COLORS[class].r
-						g = RAID_CLASS_COLORS[class].g
-						b = RAID_CLASS_COLORS[class].b
-					end
+				if RAID_CLASS_COLORS[class or ""] then
+					r = RAID_CLASS_COLORS[class].r
+					g = RAID_CLASS_COLORS[class].g
+					b = RAID_CLASS_COLORS[class].b
 				end
 				entry:GetBar():SetStatusBarColor(r, g, b)
 				entry:GetSpark():SetVertexColor(r, g, b)
