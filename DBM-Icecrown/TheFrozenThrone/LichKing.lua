@@ -4,7 +4,7 @@ local L		= mod:GetLocalizedStrings()
 local UnitGUID, UnitName, GetSpellInfo = UnitGUID, UnitName, GetSpellInfo
 local UnitInRange, UnitIsUnit, UnitInVehicle, IsInRaid = UnitInRange, UnitIsUnit, UnitInVehicle, DBM.IsInRaid
 
-mod:SetRevision("20260830100000")
+mod:SetRevision("20260902000000")
 mod:SetCreatureID(36597)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7)
 mod:SetHotfixNoticeRev(20240220000000)
@@ -93,7 +93,7 @@ local warnSummonValkyr				= mod:NewCountAnnounce(69037, 3, 71844)
 
 local specWarnYouAreValkd			= mod:NewSpecialWarning("SpecWarnYouAreValkd", nil, nil, nil, 1, 2, nil, 71844, 69037)
 local specWarnDefileCast			= mod:NewSpecialWarningMoveAway(72762, nil, nil, nil, 3, 2)
-local yellDefile					= mod:NewYellMe(72762)
+local yellDefile					= mod:NewYellMe(72762, "Defile on me!")
 local specWarnDefileNear			= mod:NewSpecialWarningClose(72762, nil, nil, nil, 1, 2)
 local specWarnSoulreaper			= mod:NewSpecialWarningDefensive(69409, nil, nil, nil, 1, 2)
 local specwarnSoulreaper			= mod:NewSpecialWarningTarget(69409, true)
@@ -240,6 +240,9 @@ end
 
 local bossCastStart, valkyrWave
 local bossCastNames = {}
+local function isLichKing(self, guid)
+	return guid and self:GetCIDFromGUID(guid) == 36597
+end
 for _, id in ipairs({68981, 72262, 70358, 70498, 70541, 72762, 73539, 73654, 72350}) do
 	local name = GetSpellInfo(id)
 	if name then
@@ -406,7 +409,7 @@ function mod:SPELL_CAST_START(args)
 			self:SetIcon(args.destName, 5, 5)
 		end
 	end
-	if bossCastNames[args.spellName] then
+	if bossCastNames[args.spellName] and isLichKing(self, args.sourceGUID) then
 		bossCastStart(self, args.spellName)
 	end
 end
@@ -449,22 +452,20 @@ function mod:SPELL_CAST_SUCCESS(args)
 		else
 			warnRagingSpirit:Show(args.destName)
 		end
-		if self.vb.phase == 1.5 then
+		if self.vb.ragingSpiritCount <= 3 then
 			timerRagingSpiritCD:Start(nil, self.vb.ragingSpiritCount)
-		else
-			timerRagingSpiritCD:Start(15.0, self.vb.ragingSpiritCount)
 		end
 		if self.Options.RagingSpiritIcon then
 			self:SetIcon(args.destName, 6, 5)
 		end
-	elseif spellId == 72762 and args.destName then
+	elseif spellId == 72762 and args.destName and isLichKing(self, args.sourceGUID) then
 		self:DefileTarget(args.destName, DBM:GetRaidUnitId(args.destName))
-	elseif spellId == 73539 and args.destName then
+	elseif spellId == 73539 and args.destName and isLichKing(self, args.sourceGUID) then
 		self:TrapTarget(args.destName, DBM:GetRaidUnitId(args.destName))
 	elseif spellId == 74445 and args.destName then
 		self:ValkyrGrab(args.destName, DBM:GetRaidUnitId(args.destName))
 	end
-	if bossCastNames[args.spellName] then
+	if bossCastNames[args.spellName] and isLichKing(self, args.sourceGUID) then
 		bossCastStart(self, args.spellName)
 	end
 end
@@ -554,7 +555,7 @@ function mod:UNIT_HEALTH(uId)
 end
 
 function mod:CHAT_MSG_MONSTER_YELL(msg)
-	if msg == L.LKPull or msg:find(L.LKPull) then
+	if msg == L.LKPull or msg:find(L.LKPull, 1, true) then
 		self:SendSync("CombatStart")
 		if self.Options.ShowFrame then
 			self:CreateFrame()
@@ -571,11 +572,11 @@ end
 function mod:UNIT_DIED(args)
 	local cid = self:GetCIDFromGUID(args.destGUID)
 	if cid == 37698 then
-		local shamblingCount = DBM:tIndexOf(shamblingHorrorsGUIDs, args.sourceGUID)
-		timerEnrageCD:Stop(shamblingCount, args.sourceGUID)
-		timerEnrageCD:Unschedule(nil, shamblingCount, args.sourceGUID)
+		local shamblingCount = DBM:tIndexOf(shamblingHorrorsGUIDs, args.destGUID)
+		timerEnrageCD:Stop(shamblingCount, args.destGUID)
+		timerEnrageCD:Unschedule(nil, shamblingCount, args.destGUID)
 	elseif cid == 36701 then
-		timerSoulShriekCD:Cancel(args.sourceGUID)
+		timerSoulShriekCD:Cancel(args.destGUID)
 	end
 end
 
@@ -600,8 +601,7 @@ end
 
 function mod:UNIT_ENTERING_VEHICLE(uId)
 	local unitName = UnitName(uId)
-	DBM:Debug("UNIT_ENTERING_VEHICLE Val'kyr check for "..  unitName .. " (" .. uId .. "): UnitInVehicle is returning " .. (UnitInVehicle(uId) or "nil") .. " and UnitInRange is returning " .. (UnitInRange(uId) or "nil") .. " with distance: " .. DBM.RangeCheck:GetDistance(uId) .."yd. Checking if it is already cached: " .. (valkyrTargets[unitName] and "true" or "nil."), 3)
-
+	if not unitName then return end
 	if UnitInVehicle(uId) then
 		self:ValkyrGrab(unitName, uId)
 	end
@@ -609,8 +609,7 @@ end
 
 function mod:UNIT_EXITING_VEHICLE(uId)
 	local unitName = UnitName(uId)
-	DBM:Debug(unitName .. " (" .. uId .. ") has exited a vehicle. Confirming API: " .. (UnitInVehicle(uId) or "nil"))
-	if valkyrTargets[unitName] then
+	if unitName and valkyrTargets[unitName] then
 		valkyrTargets[unitName] = nil
 		self:RemoveEntry(unitName)
 	end
@@ -619,6 +618,7 @@ end
 bossCastStart = function(self, spellName)
 	if not self:AntiSpam(3, spellName) then return end
 	if spellName == GetSpellInfo(68981) then
+		if self.vb.phase ~= math.floor(self.vb.phase) then return end
 		self:SetStage(self.vb.phase + 0.5)
 		self.vb.ragingSpiritCount = 1
 		warnRemorselessWinter:Show()
@@ -651,9 +651,10 @@ bossCastStart = function(self, spellName)
 		self.vb.ragingSpiritCount = 0
 		warnQuake:Show()
 		timerRagingSpiritCD:Cancel()
-		self:SetStage(self.vb.phase + 0.5)
+		if self.vb.phase == math.floor(self.vb.phase) then return end
+		self:SetStage(math.floor(self.vb.phase) + 1)
 		self:UnregisterShortTermEvents()
-		NextPhase(self)
+		NextPhase(self, 0)
 		if self.Options.RangeFrame then
 			DBM.RangeCheck:Hide()
 		end
@@ -726,8 +727,11 @@ valkyrWave = function(self)
 	self.vb.valkyrWaveCount = self.vb.valkyrWaveCount + 1
 	warnSummonValkyr:Show(self.vb.valkyrWaveCount)
 	timerSummonValkyr:Start(nil, self.vb.valkyrWaveCount+1)
-	if timerDefileCD:GetRemaining(self.vb.defileCount+1) < (self:IsDifficulty("normal25", "heroic25") and 5 or 4) then
-		timerDefileCD:Start(self:IsDifficulty("normal25", "heroic25") and 5 or 4, self.vb.defileCount+1)
+	if self.vb.phase == 2 then
+		local minTime = self:IsDifficulty("normal25", "heroic25") and 5 or 4
+		if timerDefileCD:GetRemaining(self.vb.defileCount+1) < minTime then
+			timerDefileCD:Start(minTime, self.vb.defileCount+1)
+		end
 	end
 end
 

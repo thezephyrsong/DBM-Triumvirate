@@ -3,7 +3,7 @@ local L		= mod:GetLocalizedStrings()
 
 local GetTime = GetTime
 
-mod:SetRevision("20260830100000")
+mod:SetRevision("20260902100000")
 mod:SetCreatureID(36678)
 mod:SetUsedIcons(1, 2, 3, 4)
 mod:SetHotfixNoticeRev(20230823000000)
@@ -134,7 +134,8 @@ end
 
 local function StartTransition(self)
 	if self.vb.phase ~= 1 and self.vb.phase ~= 2 then return end
-	local delay = self:IsHeroic() and 49 or 24
+	local heroicDelay = self:IsHeroic() and 25 or 0
+	local delay = 24 + heroicDelay
 	local toPhase3 = self.vb.phase == 2
 	self:SetStage(self.vb.phase + 0.5)
 	warnUnstableExperimentSoon:Cancel()
@@ -163,11 +164,11 @@ local function StartTransition(self)
 		if unstableRemaining > 5 then
 			warnUnstableExperimentSoon:Schedule(unstableRemaining-5)
 		end
-		timerMalleableGooCD:Start(25+delay)
-		soundMalleableGooSoon:Schedule(25+delay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\malleable_soon.mp3")
-		timerChokingGasBombCD:Start(35+delay)
-		soundChokingGasSoon:Schedule(35+delay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
-		warnChokingGasBombSoon:Schedule(35+delay-5)
+		timerMalleableGooCD:Start(25+heroicDelay)
+		soundMalleableGooSoon:Schedule(25+heroicDelay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\malleable_soon.mp3")
+		timerChokingGasBombCD:Start(35+heroicDelay)
+		soundChokingGasSoon:Schedule(35+heroicDelay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
+		warnChokingGasBombSoon:Schedule(35+heroicDelay-5)
 	end
 end
 
