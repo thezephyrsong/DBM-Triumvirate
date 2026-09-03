@@ -23,7 +23,7 @@ mod:RegisterEventsInCombat(
 	"UNIT_HEALTH boss1"
 )
 
-local timerCombatStart		= mod:NewCombatTimer(47.10)
+local timerCombatStart		= mod:NewCombatTimer(30.00)
 local enrageTimer			= mod:NewBerserkTimer(480)
 
 mod:RemoveOption("HealthFrame")
