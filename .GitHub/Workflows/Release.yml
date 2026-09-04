@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main (at tag)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+          path: main
+
+      - name: Checkout chromiebase (branch tip)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: chromiebase
+          path: chromiebase
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version in main and push
+        working-directory: main
+        run: |
+          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" DBM-Core/DBM-Core.toc
+          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" DBM-GUI/DBM-GUI.toc
+
+          if git diff --quiet; then
+            echo "No changes to commit on main"
+          else
+            git add DBM-Core/DBM-Core.toc DBM-GUI/DBM-GUI.toc
+            git commit -m "chore: update version to ${{ github.ref_name }} [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Bump version in chromiebase and push
+        working-directory: chromiebase
+        run: |
+          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" DBM-Core/DBM-Core.toc
+          sed -i "s/^## Version: .*/## Version: ${{ github.ref_name }}/g" DBM-GUI/DBM-GUI.toc
+
+          if git diff --quiet; then
+            echo "No changes to commit on chromiebase"
+          else
+            git add DBM-Core/DBM-Core.toc DBM-GUI/DBM-GUI.toc
+            git commit -m "chore: update version to ${{ github.ref_name }} [skip ci]"
+            git push origin HEAD:chromiebase
+          fi
+
+      - name: Build main zip
+        run: |
+          mkdir -p build/DBM-Triumvirate
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' \
+            --exclude='.gitattributes' --exclude='.pkgmeta' \
+            main/ build/DBM-Triumvirate/
+          cd build && zip -r ../DBM-Triumvirate.zip DBM-Triumvirate/
+
+      - name: Build chromiebase zip
+        run: |
+          mkdir -p build2/DBM-Triumvirate-chromiebase
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' \
+            --exclude='.gitattributes' --exclude='.pkgmeta' \
+            chromiebase/ build2/DBM-Triumvirate-chromiebase/
+          cd build2 && zip -r ../DBM-Triumvirate-chromiebase.zip DBM-Triumvirate-chromiebase/
+
+      - name: Create Versioned GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            DBM-Triumvirate.zip
+            DBM-Triumvirate-chromiebase.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Latest Tag
+        run: |
+          git -C main tag -f latest
+          git -C main push origin latest --force
+
+      - name: Update Latest GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            DBM-Triumvirate.zip
+            DBM-Triumvirate-chromiebase.zip
+          tag_name: latest
+          name: Latest Release
+          body: "This release always contains the most recent version (${{ github.ref_name }}), built from both the main and chromiebase branches."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
