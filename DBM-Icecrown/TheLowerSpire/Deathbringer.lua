@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Deathbringer", "DBM-Icecrown", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260830000000")
+mod:SetRevision("20260904000000")
 mod:SetCreatureID(37813)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
 mod:SetMinSyncRevision(20220905000000)
@@ -22,7 +22,7 @@ mod:RegisterEventsInCombat(
 	"UNIT_HEALTH boss1"
 )
 
-local timerCombatStart		= mod:NewCombatTimer(30.00)
+local timerCombatStart		= mod:NewCombatTimer(47.10)
 local enrageTimer			= mod:NewBerserkTimer(480)
 
 mod:RemoveOption("HealthFrame")
@@ -234,7 +234,7 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 			DBM.RangeCheck:Show(12)
 		end
 	elseif msg:find(L.PullHorde, 1, true) then
-		timerCombatStart:Start(98.72)
+		timerCombatStart:Start(81.72)
 		if self.Options.RangeFrame then
 			DBM.RangeCheck:Show(12)
 		end
