@@ -133,11 +133,13 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-	NextCollapsingStar		= "Next Collapsing Star"
+	NextCollapsingStar		= "Next Collapsing Star",
+	TimerCombatStart		= "Combat starts"
 })
 
 L:SetOptionLocalization({
 	NextCollapsingStar		= "Show timer for next Collapsing Star",
+	TimerCombatStart		= "Show timer for start of combat",
 	warnStarLow				= "Show special warning when Collapsing Star is low (at ~25%)"
 })
 
@@ -148,7 +150,8 @@ L:SetMiscLocalization({
 	YellKill				= "I have seen worlds bathed in the Makers' flames, their denizens fading without as much as a whimper. Entire planetary systems born and razed in the time that it takes your mortal hearts to beat once. Yet all throughout, my own heart devoid of emotion... of empathy. I. Have. Felt. Nothing. A million-million lives wasted. Had they all held within them your tenacity? Had they all loved life as you do?",
 	Emote_CollapsingStar	= "%s begins to Summon Collapsing Stars!",
 	Phase2					= "Behold the tools of creation!",
-	CollapsingStar			= "Collapsing Star"
+	CollapsingStar			= "Collapsing Star",
+	PullCheck				= "Time until Algalon transmits distress signal= (%d+) min."
 })
 
 ----------------
