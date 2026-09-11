@@ -1,11 +1,11 @@
 local mod	= DBM:NewMod("LordMarrowgar", "DBM-Icecrown", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260830100000")
+mod:SetRevision("20260910000000")
 mod:SetCreatureID(36612)
 mod:SetEncounterID(845)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
-mod:SetHotfixNoticeRev(20260829000000)
+mod:SetHotfixNoticeRev(20260910000000)
 mod:SetMinSyncRevision(20221117000000)
 
 mod:RegisterCombat("combat")
@@ -24,7 +24,7 @@ local warnImpale			= mod:NewTargetNoFilterAnnounce(72669, 3)
 local specWarnColdflame		= mod:NewSpecialWarningGTFO(69146, nil, nil, nil, 1, 8)
 local specWarnWhirlwind		= mod:NewSpecialWarningRun(69076, nil, nil, nil, 4, 2)
 
-local timerBoneSpike		= mod:NewCDTimer(15, 69057, nil, nil, nil, 1, nil, DBM_COMMON_L.DAMAGE_ICON, true)
+local timerBoneSpike		= mod:NewCDTimer("v15-20", 69057, nil, nil, nil, 1, nil, DBM_COMMON_L.DAMAGE_ICON, true)
 local timerWhirlwindCD		= mod:NewCDTimer(90, 69076, nil, nil, nil, 2, nil, DBM_COMMON_L.MYTHIC_ICON)
 local timerWhirlwind		= mod:NewBuffActiveTimer(20, 69076, nil, nil, nil, 6)
 local timerBoned			= mod:NewAchievementTimer(8, 4610)
@@ -40,10 +40,18 @@ mod:AddSetIconOption("SetIconOnImpale", 72669, true, 0, {8, 7, 6, 5, 4, 3, 2, 1}
 
 mod.vb.impaleIcon = 8
 
+local spikeMin, spikeMax = 0, 0
+
+local function setSpikeWindow(minT, maxT)
+	local now = GetTime()
+	spikeMin, spikeMax = now + minT, now + maxT
+end
+
 function mod:OnCombatStart(delay)
 	preWarnWhirlwind:Schedule(40-delay)
 	timerWhirlwindCD:Start(45-delay)
-	timerBoneSpike:Start(10-delay)
+	timerBoneSpike:Start(("v%s-%s"):format(10-delay, 15-delay))
+	setSpikeWindow(10-delay, 15-delay)
 	berserkTimer:Start(-delay)
 	self:RegisterShortTermEvents(
 		"SPELL_PERIODIC_DAMAGE 69146 70823 70824 70825",
@@ -79,7 +87,8 @@ function mod:SPELL_AURA_REMOVED(args)
 	elseif spellId == 69076 then
 		timerWhirlwind:Cancel()
 		if not self:IsHeroic() then
-			timerBoneSpike:Start(15)
+			timerBoneSpike:Start("v15-20")
+			setSpikeWindow(15, 20)
 		end
 	end
 end
@@ -89,12 +98,23 @@ function mod:SPELL_CAST_START(args)
 		self:AntiSpam(3, 3)
 		warnBoneSpike:Show()
 		timerBoneSpike:Start()
+		setSpikeWindow(15, 20)
 		timerBoneSpikeUp:Start()
 		soundBoneSpike:Play("Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\Bone_Spike_cast.mp3")
 	elseif args.spellId == 69076 then
 		preWarnWhirlwind:Schedule(85)
 		timerWhirlwindCD:Start()
 		timerWhirlwindStart:Start()
+		if self:IsHeroic() then
+			local now = GetTime()
+			if spikeMin - now < 3.5 then
+				local maxLeft = math.max(3.5, spikeMax - now)
+				timerBoneSpike:Start(("v%.1f-%.1f"):format(3, maxLeft))
+				spikeMin, spikeMax = now + 3, now + maxLeft
+			end
+		else
+			timerBoneSpike:Cancel()
+		end
 		soundBoneStorm:Play("Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\Bone_Storm_cast.mp3")
 	end
 end
@@ -111,6 +131,7 @@ function mod:SPELL_SUMMON(args)
 	if args:IsSpellID(69062, 72669, 72670) then
 		if self:AntiSpam(3, 3) then
 			timerBoneSpike:Start()
+			setSpikeWindow(15, 20)
 		end
 		warnImpale:CombinedShow(0.3, args.sourceName)
 		timerBoned:Restart()

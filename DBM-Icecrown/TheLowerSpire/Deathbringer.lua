@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Deathbringer", "DBM-Icecrown", 1)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260904000000")
+mod:SetRevision("20260906000000")
 mod:SetCreatureID(37813)
 mod:SetEncounterID(848)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
@@ -10,7 +10,8 @@ mod:SetMinSyncRevision(20220905000000)
 mod:RegisterCombat("combat")
 
 mod:RegisterEvents(
-	"CHAT_MSG_MONSTER_YELL"
+	"CHAT_MSG_MONSTER_YELL",
+	"CHAT_MSG_MONSTER_SAY"
 )
 
 mod:RegisterEventsInCombat(
@@ -23,7 +24,7 @@ mod:RegisterEventsInCombat(
 	"UNIT_HEALTH boss1"
 )
 
-local timerCombatStart		= mod:NewCombatTimer(47.10)
+local timerCombatStart		= mod:NewCombatTimer(46.9)
 local enrageTimer			= mod:NewBerserkTimer(480)
 
 mod:RemoveOption("HealthFrame")
@@ -230,20 +231,32 @@ end
 
 function mod:CHAT_MSG_MONSTER_YELL(msg)
 	if msg:find(L.PullAlliance, 1, true) then
-		timerCombatStart:Start()
+		timerCombatStart:Start(46.9)
 		if self.Options.RangeFrame then
 			DBM.RangeCheck:Show(12)
 		end
 	elseif msg:find(L.PullHorde, 1, true) then
-		timerCombatStart:Start(81.72)
+		timerCombatStart:Start(81.1)
 		if self.Options.RangeFrame then
 			DBM.RangeCheck:Show(12)
 		end
+	elseif msg:find(L.IntroAllianceArrive, 1, true) then
+		timerCombatStart:Start(14)
+	elseif msg:find(L.IntroAllianceCharge, 1, true) then
+		timerCombatStart:Start(9)
+	elseif msg:find(L.IntroHordeFinal, 1, true) then
+		timerCombatStart:Start(8.5)
 	elseif msg:find(L.YellAggro, 1, true) then
 		if not self:IsInCombat() then
 			DBM:StartCombat(self, 0)
 		else
 			StartPullTimers(self, 0)
 		end
+	end
+end
+
+function mod:CHAT_MSG_MONSTER_SAY(msg)
+	if msg:find(L.IntroHordeArrive, 1, true) then
+		timerCombatStart:Start(56.7)
 	end
 end

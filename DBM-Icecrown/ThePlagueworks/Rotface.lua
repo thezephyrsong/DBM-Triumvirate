@@ -1,17 +1,17 @@
 local mod	= DBM:NewMod("Rotface", "DBM-Icecrown", 2)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260910000001")
 mod:SetCreatureID(36627)
 mod:SetEncounterID(850)
 mod:SetUsedIcons(1, 2)
-mod:RegisterCombat("combat")
+mod:RegisterCombat("combat_yell", "Weeeeee!")
 
 mod:RegisterEventsInCombat(
 	"SPELL_CAST_START 69508 69774 69839",
 	"SPELL_AURA_APPLIED 71208 69760 69558 69674 71224 73022 73023 72272 72273 69240 71218 73019 73020",
 	"SPELL_AURA_APPLIED_DOSE 69558",
-	"SPELL_CAST_SUCCESS 72272 72273 69240 71218 73019 73020 69674 71224 73022 73023",
+	"SPELL_CAST_SUCCESS 69508 69782 69796 69798 69801 72272 72273 69240 71218 73019 73020 69674 71224 73022 73023",
 	"SPELL_AURA_REMOVED 69674 71224 73022 73023",
 	"CHAT_MSG_MONSTER_YELL"
 )
@@ -86,12 +86,18 @@ function mod:OnCombatEnd()
 	end
 end
 
+function mod:SlimeSpray()
+	timerSlimeSpray:Start()
+	specWarnSlimeSpray:Show()
+	warnSlimeSpray:Show()
+end
+
 function mod:SPELL_CAST_START(args)
 	local spellId = args.spellId
 	if spellId == 69508 then
-		timerSlimeSpray:Start()
-		specWarnSlimeSpray:Show()
-		warnSlimeSpray:Show()
+		if self:AntiSpam(10, 5) then
+			self:SlimeSpray()
+		end
 	elseif spellId == 69774 then
 		timerStickyOoze:Start(args.sourceGUID)
 		warnStickyOoze:Show()
@@ -148,8 +154,19 @@ end
 mod.SPELL_AURA_APPLIED_DOSE = mod.SPELL_AURA_APPLIED
 
 function mod:SPELL_CAST_SUCCESS(args)
-	if args:IsSpellID(72272, 72273) or args:IsSpellID(69240, 71218, 73019, 73020) then
-		timerVileGasCD:Start()
+	local spellId = args.spellId
+	if spellId == 69508 then
+		if self:AntiSpam(10, 5) then
+			self:SlimeSpray()
+		end
+	elseif spellId == 69782 or spellId == 69796 or spellId == 69798 or spellId == 69801 then
+		if self:AntiSpam(5, 6) then
+			timerWallSlime:Start()
+		end
+	elseif args:IsSpellID(72272, 72273) or args:IsSpellID(69240, 71218, 73019, 73020) then
+		if self:AntiSpam(5, 3) then
+			timerVileGasCD:Start()
+		end
 	elseif args:IsSpellID(69674, 71224, 73022, 73023) and self:AntiSpam(2, 4) then
 		timerMutatedInfectionCD:Start(self.vb.infectionCD)
 	end
@@ -195,7 +212,8 @@ mod.SWING_MISSED = mod.SWING_DAMAGE
 
 function mod:CHAT_MSG_MONSTER_YELL(msg)
 	if (msg == L.YellSlimePipes1 or msg:find(L.YellSlimePipes1)) or (msg == L.YellSlimePipes2 or msg:find(L.YellSlimePipes2)) then
-
-		timerWallSlime:Start()
+		if self:AntiSpam(5, 6) then
+			timerWallSlime:Start()
+		end
 	end
 end

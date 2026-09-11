@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("BPCouncil", "DBM-Icecrown", 3)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260829000000")
+mod:SetRevision("20260911000000")
 mod:SetCreatureID(37970, 37972, 37973)
 mod:SetEncounterID(852)
 mod:SetUsedIcons(1, 5, 6, 7, 8)
@@ -63,7 +63,7 @@ local yellVortex				= mod:NewYellMe(72037)
 local specWarnVortexNear		= mod:NewSpecialWarningClose(72037, nil, nil, nil, 1, 2)
 local specWarnEmpoweredShockV	= mod:NewSpecialWarningMoveAway(72039, nil, nil, nil, 1, 2)
 
-local timerShockVortex			= mod:NewCDTimer(18, 72037, nil, nil, nil, 3, nil, nil, true)
+local timerShockVortex			= mod:NewCDTimer(20.5, 72037, nil, nil, nil, 3, nil, nil, true)
 local timerEmpoweredShockVortex	= mod:NewCDTimer(30, 72039, nil, nil, nil, 3, nil, DBM_COMMON_L.DEADLY_ICON, true)
 
 local soundSpecWarnVortexNear	= mod:NewSoundClose(72037)
@@ -81,7 +81,7 @@ local warnGliteringSparks		= mod:NewTargetAnnounce(71807, 2, nil, false)
 local specWarnEmpoweredFlames	= mod:NewSpecialWarningRun(72040, nil, nil, nil, 4, 2)
 local yellEmpoweredFlames		= mod:NewYellMe(72040)
 
-local timerConjureFlamesCD		= mod:NewCDTimer(20, 71718, nil, nil, nil, 3, nil, nil, true)
+local timerConjureFlamesCD		= mod:NewCDTimer(22.5, 71718, nil, nil, nil, 3, nil, nil, true)
 local timerGlitteringSparksCD	= mod:NewCDTimer(15, 71807, nil, nil, nil, 2, nil, nil, true)
 
 local soundEmpoweredFlames		= mod:NewSoundYou(72040)
@@ -108,7 +108,7 @@ function mod:OnCombatStart(delay)
 	timerTargetSwitch:Start(45-delay)
 	timerConjureFlamesCD:Start(20-delay)
 	timerGlitteringSparksCD:Start(12-delay)
-	timerEmpoweredShockVortex:Start(15-delay)
+	timerEmpoweredShockVortex:Start(17.5-delay)
 	timerKineticBombCD:Start(18-delay, 1)
 	timerDarkNucleusCD:Start(10-delay)
 	if self.Options.RangeFrame then
