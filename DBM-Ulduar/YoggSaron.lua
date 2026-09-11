@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("YoggSaron", "DBM-Ulduar")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20268237220131")
+mod:SetRevision("20268317220131")
 mod:SetCreatureID(33288)
 mod:SetEncounterID(756)
 mod:RegisterCombat("combat_yell", L.YellPull)
@@ -292,12 +292,11 @@ function mod:SPELL_AURA_APPLIED(args)
 			specWarnFervor:Play("targetyou")
 		end
 	elseif args:IsSpellID(63894, 64775) and self.vb.phase < 2 then	-- Shadowy Barrier of Yogg-Saron (this is happens when p2 starts, ~1s after IEEU, so correction factor is needed). Bugged on Warmane, 63894 is never applied (only removed), instead 64775 is applied to Sara
-		-- "<114.74 19:51:51> [CLEU] SPELL_AURA_APPLIED:0xF13000816E0007D4:Sara:0xF13000816E0007D4:Sara:64775:Shadowy Barrier:BUFF:nil:", -- [5432]
 		self:SetStage(2)
-		timerMaladyCD:Start(17.8)	-- (25 man NM log 2022/07/10 || S3 HM log 2022/07/21) - 18 || 18.0 ; 17.9 ; 17.8
-		timerBrainLinkCD:Start(23)	-- (25 man NM log 2022/07/10 || S3 HM log 2022/07/21) - 23 || 23.0 ; 23.0
-		timerBrainPortal:Start(59)	-- (25 man NM log 2022/07/10 || S3 HM log 2022/07/21) - 59 || 59.8 ; 59.7 ; 59.5
-		warnBrainPortalSoon:Schedule(49)
+		timerMaladyCD:Start(12)	-- 12s AC
+		timerBrainLinkCD:Start(18)	--  18s AC
+		timerBrainPortal:Start(60)	-- 60s AC
+		warnBrainPortalSoon:Schedule(50)
 		specWarnBrainPortalSoon:Schedule(56)
 		warnP2:Show()
 		warnP2:Play("ptwo")
@@ -339,6 +338,7 @@ function mod:SPELL_AURA_REMOVED(args)
 		if self.Options.SetIconOnBeacon then
 			self:ScanForMobs(args.destGUID, 2, 0, 1, nil, 6, "SetIconOnBeacon", true, nil, nil, true)
 		end
+		self.vb.beaconIcon = 8
 	end
 end
 

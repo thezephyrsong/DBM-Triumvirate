@@ -1,7 +1,7 @@
 local mod	= DBM:NewMod("Algalon", "DBM-Ulduar")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20260730000000")
+mod:SetRevision("20260907000000")
 mod:SetCreatureID(32871)
 mod:SetEncounterID(757)
 mod:RegisterCombat("yell", L.YellPull)
@@ -45,27 +45,26 @@ local timerCastCosmicSmash		= mod:NewCastTimer(4.5, 64596)
 local timerPhasePunch			= mod:NewTargetTimer(45, 64412, nil, "Tank", 2, 5, nil, DBM_COMMON_L.TANK_ICON)
 local timerNextPhasePunch		= mod:NewNextTimer(15.5, 64412, nil, "Tank", 2, 5, nil, DBM_COMMON_L.TANK_ICON)
 local enrageTimer				= mod:NewBerserkTimer(360)
+local timerCombatStart 			= mod:NewTimer(26, "TimerCombatStart", "Interface\\Icons\\ability_warrior_offensivestance")
 
 local warned_star = {}
 local stars = {}
 local stars_hp = {}
 local star_num = 1
 mod.vb.warned_preP2 = false
-mod.vb.introDelay = 8.5
 
 local function matches(msg, str)
 	return str ~= nil and (msg == str or msg:find(str, nil, true) ~= nil)
 end
  
-local function startTimers(self, elapsed)
-	local d = self.vb.introDelay
-	timerNextPhasePunch:Start(15.5 + d - elapsed)
-	timerNextCollapsingStar:Start(16.5 + d - elapsed)
-	timerCDCosmicSmash:Start(26 + d - elapsed)
+function mod:startTimers()
+	timerNextPhasePunch:Start(15.5)
+	timerNextCollapsingStar:Start(16.5)
+	timerCDCosmicSmash:Start(26)
 	announcePreBigBang:Cancel()
-	announcePreBigBang:Schedule(80 + d - elapsed)
-	timerNextBigBang:Start(90 + d - elapsed)
-	enrageTimer:Start(360 + d - elapsed)
+	announcePreBigBang:Schedule(80)
+	timerNextBigBang:Start(90)
+	enrageTimer:Start(360)
 end
 
 function mod:OnCombatStart(delay)
@@ -75,8 +74,15 @@ function mod:OnCombatStart(delay)
 	stars_hp = {}
 	star_num = 1
 	self.vb.warned_preP2 = false
-	self.vb.introDelay = 8.5
-	startTimers(self, delay)
+	local text = select(3, GetWorldStateUIInfo(1))
+	local minutes = tonumber(text and text:match("%d+")) or 0 -- before firstpull there is no timer yet
+	if minutes == 0 then
+		timerCombatStart:Start(-delay)			-- 26s Roleplay
+		self:ScheduleMethod(26 - delay, "startTimers")
+	else
+		timerCombatStart:Start(8 - delay)		-- 8s Roleplay
+		self:ScheduleMethod(8 - delay, "startTimers")
+	end
 end
 
 function mod:OnCombatEnd()
@@ -112,6 +118,7 @@ end
 function mod:SPELL_AURA_APPLIED(args)
 	if args.spellId == 64412 then
 		local amount = args.amount or 1
+		timerNextPhasePunch:Start()
 		if args:IsPlayer() and amount >= 4 then
 			specWarnPhasePunch:Show(amount)
 			specWarnPhasePunch:Play("stackhigh")
@@ -146,10 +153,7 @@ function mod:CHAT_MSG_RAID_BOSS_EMOTE(msg)
 end
 
 function mod:CHAT_MSG_MONSTER_YELL(msg)
-	if matches(msg, L.FirstPull) then
-		self.vb.introDelay = 26
-		startTimers(self, 16)
-	elseif matches(msg, L.Phase2) then
+	if matches(msg, L.Phase2) then
 		self:SetStage(2)
 		self.vb.warned_preP2 = true
 		timerNextCollapsingStar:Stop()
@@ -159,7 +163,6 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 		DBM.BossHealth:AddBoss(32871)
 	end
 end
-
 
 function mod:UNIT_HEALTH(uId)
 	local cid = self:GetUnitCreatureId(uId)
