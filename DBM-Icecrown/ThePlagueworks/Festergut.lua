@@ -3,6 +3,7 @@ local L		= mod:GetLocalizedStrings()
 
 mod:SetRevision("20260830100000")
 mod:SetCreatureID(36626)
+mod:SetEncounterID(849)
 mod:RegisterCombat("combat")
 mod:SetUsedIcons(1, 2, 3)
 mod:SetHotfixNoticeRev(20230627000000)
@@ -32,8 +33,9 @@ local specWarnInhaled3		= mod:NewSpecialWarningStack(69166, "Tank", 3, nil, nil,
 local specWarnGoo			= mod:NewSpecialWarningDodge(72297, true, nil, nil, 1, 2)
 
 local timerGasSpore			= mod:NewBuffFadesTimer(12, 69279, nil, nil, nil, 3)
-local timerVileGas			= mod:NewBuffFadesTimer(6, 69240, nil, "Ranged", nil, 3)
-local timerVileGasCD		= mod:NewCDTimer(28, 69240, nil, "Ranged", nil, 3)
+local timerVileGas			= mod:NewBuffFadesTimer(6, 69240, nil, nil, nil, 3)
+local timerVileGasCD		= mod:NewCDTimer(28, 69240, nil, nil, nil, 3)
+local timerVileGasPreCast	= mod:NewCastTimer(3, 69240, nil, nil, nil, 2)
 local timerGasSporeCD		= mod:NewCDTimer(40, 69279, nil, nil, nil, 3, nil, nil, true)
 local timerPungentBlight	= mod:NewCDTimer(34, 69195, nil, nil, nil, 2)
 local timerInhaledBlight	= mod:NewCDTimer(34, 69166, nil, nil, nil, 6, nil, nil, true)
@@ -59,6 +61,19 @@ function mod:AnnounceSporeIcons(uId, icon)
 	end
 end
 
+local function showVileGasPreCast()
+	timerVileGasPreCast:Start()
+end
+
+local function startVileGasCD(self, t)
+	t = t or 28
+	timerVileGasCD:Start(t)
+	self:Unschedule(showVileGasPreCast)
+	if t > 3 then
+		self:Schedule(t - 3, showVileGasPreCast)
+	end
+end
+
 local function warnGasSporeTargets()
 	warnGasSpore:Show(table.concat(gasSporeTargets, "<, >"))
 	timerGasSpore:Start()
@@ -77,7 +92,7 @@ function mod:OnCombatStart(delay)
 	timerInhaledBlight:Start(25-delay)
 	timerGasSporeCD:Start(20-delay)
 	timerGastricBloatCD:Start(12.5-delay)
-	timerVileGasCD:Start(30-delay)
+	startVileGasCD(self, 30-delay)
 	table.wipe(gasSporeTargets)
 	table.wipe(vileGasTargets)
 	self.vb.gasSporeCast = 0
@@ -91,6 +106,7 @@ function mod:OnCombatStart(delay)
 end
 
 function mod:OnCombatEnd()
+	self:Unschedule(showVileGasPreCast)
 	if self.Options.RangeFrame then
 		DBM.RangeCheck:Hide()
 	end
@@ -98,6 +114,12 @@ end
 
 function mod:SPELL_CAST_START(args)
 	if args.spellId == 69165 then
+		if timerGastricBloatCD:GetRemaining() < 5 then
+			timerGastricBloatCD:Start(5)
+		end
+		if timerVileGasCD:GetRemaining() < 5 then
+			startVileGasCD(self, 5)
+		end
 		self.vb.inhaleCount = (self.vb.inhaleCount or 0) + 1
 		if self.vb.inhaleCount >= 3 then
 			timerInhaledBlight:Cancel()
@@ -106,6 +128,12 @@ function mod:SPELL_CAST_START(args)
 			timerInhaledBlight:Start()
 		end
 	elseif args:IsSpellID(69195, 71219, 73031, 73032) then
+		if timerGastricBloatCD:GetRemaining() < 5 then
+			timerGastricBloatCD:Start(5)
+		end
+		if timerVileGasCD:GetRemaining() < 5 then
+			startVileGasCD(self, 5)
+		end
 		self.vb.inhaleCount = 0
 		specWarnPungentBlight:Show()
 		specWarnPungentBlight:Play("aesoon")
@@ -119,10 +147,10 @@ function mod:SPELL_CAST_SUCCESS(args)
 		self.vb.gasSporeCast = self.vb.gasSporeCast + 1
 		timerGasSporeCD:Start()
 		if timerVileGasCD:GetRemaining() < 20 then
-			timerVileGasCD:Start(20)
+			startVileGasCD(self, 20)
 		end
 	elseif args:IsSpellID(69240, 71218, 73019, 73020) then
-		timerVileGasCD:Start()
+		startVileGasCD(self, 28)
 	elseif args.spellId == 72296 and self:AntiSpam(5, 2) then
 		specWarnGoo:Show()
 		specWarnGoo:Play("watchstep")

@@ -3,6 +3,7 @@ local L		= mod:GetLocalizedStrings()
 
 mod:SetRevision("20231121214155")
 mod:SetCreatureID(36789)
+mod:SetEncounterID(854)
 mod:SetUsedIcons(8)
 mod.onlyHighest = true
 

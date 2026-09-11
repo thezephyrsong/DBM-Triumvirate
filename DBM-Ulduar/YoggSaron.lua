@@ -1,8 +1,9 @@
 local mod	= DBM:NewMod("YoggSaron", "DBM-Ulduar")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20230221142915")
+mod:SetRevision("20268237220131")
 mod:SetCreatureID(33288)
+mod:SetEncounterID(756)
 mod:RegisterCombat("combat_yell", L.YellPull)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7, 8)
 
@@ -59,8 +60,8 @@ local specWarnMalady				= mod:NewSpecialWarningYou(63830, nil, nil, nil, 1, 2)
 local specWarnMaladyNear			= mod:NewSpecialWarningClose(63830, nil, nil, nil, 1, 2)
 local yellMalady					= mod:NewYell(63830)
 
-local timerBrainLinkCD				= mod:NewCDTimer(23, 63802, nil, nil, nil, 3) -- 3s variance [23-26] + portalled players incurring in a possible ~50-80s variance (25 man NM log 2022/07/10 || S3 HM log 2022/07/21) - 25.4, 26.0 || 25.5, 24.1 ; 24.7, 23.9 ; 24.7, 23.7, 24.1
-local timerMaladyCD					= mod:NewCDTimer(18.7, 63830, nil, nil, nil, 3) -- 7s variance [18-25] + portalled players incurring in a possible ~50-80s variance (25 man NM log 2022/07/10 || S3 HM log 2022/07/21 || 25m Lordaeron 2022/10/09 || 25m Lordaeron 2022/10/30) - 22.3, 22.0 || 21.3, 20.6, 20.2, 52.1, 20.4, 60.8, 20.8, 60.4, 24.8 ; 19.6, 24.5, 60.8, 22.7, 56.8, 21.5, 22.4, 46.5 || 26.0, 19.4, 63.6, 24.1, 51.3, 24.2 || 18.8, 23.0, 24.9, 52.0, 23.4
+local timerBrainLinkCD				= mod:NewCDTimer(30, 63802, nil, nil, nil, 3) --30s on AC
+local timerMaladyCD					= mod:NewCDTimer(20, 63830, nil, nil, nil, 3) --20s on AC
 
 mod:AddSetIconOption("SetIconOnBrainLinkTarget", 63802, true, false, {1, 2})
 mod:AddSetIconOption("SetIconOnFearTarget", 63830, true, false, {6})
@@ -110,7 +111,7 @@ local warnP3						= mod:NewPhaseAnnounce(3, 2, nil, nil, nil, nil, nil, 2)
 local specWarnLunaticGaze			= mod:NewSpecialWarningLookAway(64163, nil, nil, nil, 1, 2)
 
 local timerLunaticGaze				= mod:NewCastTimer(4, 64163, nil, nil, nil, 2, nil, DBM_COMMON_L.IMPORTANT_ICON) -- Yogg-Saron's Gaze
-local timerNextLunaticGaze			= mod:NewCDTimer(8, 64163, nil, nil, nil, 2, nil, DBM_COMMON_L.IMPORTANT_ICON) -- Yogg-Saron's Gaze, Log reviewed (25 man NM  2022/07/10) - [cast_success: apply 4s cast time correction factor] 12.0, 12.0, 12.1, 12.1, 12.0, 12.0
+local timerNextLunaticGaze			= mod:NewCDTimer("v8-18", 64163, nil, nil, nil, 2, nil, DBM_COMMON_L.IMPORTANT_ICON) -- 13-22 on AC = from aura-removed 9–18s
 
 mod:AddSetIconOption("SetIconOnBeacon", 64465, true, true, {1, 2, 3, 4, 5, 6, 7, 8})
 
@@ -118,7 +119,7 @@ mod:AddSetIconOption("SetIconOnBeacon", 64465, true, true, {1, 2, 3, 4, 5, 6, 7,
 -- mod:AddTimerLine(L.ImmortalGuardian)
 local warnEmpowerSoon				= mod:NewSoonAnnounce(64486, 4)
 
-local timerEmpower					= mod:NewCDTimer(46.0, 64486, nil, nil, nil, 3) -- REVIEW! variance 45-50? (S3 HM log 2022/07/21) - 46.0, 46.0, 47.4, 48.2
+local timerEmpower					= mod:NewCDTimer(45.0, 64486, nil, nil, nil, 3) -- 45s on AC
 local timerEmpowerDuration			= mod:NewBuffActiveTimer(10, 64486, nil, nil, nil, 3)
 
 mod:GroupSpells(64486, 64465) -- Empowering Shadows, Shadow Beacon
@@ -132,7 +133,7 @@ local warnDeafeningRoarSoon			= mod:NewPreWarnAnnounce(64189, 5, 3)
 local specWarnDeafeningRoar			= mod:NewSpecialWarningSpell(64189, nil, nil, nil, 1, 2)
 
 local timerCastDeafeningRoar		= mod:NewCastTimer(2.3, 64189, nil, nil, nil, 2)
-local timerNextDeafeningRoar		= mod:NewNextTimer(58, 64189, nil, nil, nil, 2) -- (S2 VOD || S3 VOD 2022/07/15 || S3 HM log 2022/07/21) - 58 || 58, 58, 58, 58, 60, 60, 60 || 60.1, 60.1, 60.1
+local timerNextDeafeningRoar		= mod:NewNextTimer(60, 64189, nil, nil, nil, 2) -- 60s on AC
 
 local targetWarningsShown = {}
 local brainLinkTargets = {}
@@ -194,7 +195,7 @@ function mod:SPELL_CAST_START(args)
 		specWarnMadnessOutNow:Schedule(55) -- TO DO: implement brain room check?
 	elseif spellId == 64189 then		--Deafening Roar
 		timerNextDeafeningRoar:Start()
-		warnDeafeningRoarSoon:Schedule(53)
+		warnDeafeningRoarSoon:Schedule(55)
 		timerCastDeafeningRoar:Start()
 		specWarnDeafeningRoar:Show()
 		specWarnDeafeningRoar:Play("silencesoon")
@@ -380,8 +381,8 @@ function mod:OnSync(msg)
 		warnP3:Show()
 		warnP3:Play("pthree")
 		warnEmpowerSoon:Schedule(40)
-		timerNextDeafeningRoar:Start(20) -- Has variance (S2 VOD || S3 VOD 2022/07/15 || S3 HM log 2022/07/21) - 21 || 22, 21.5, 20.6, 22.1, 20.0, 28, 28 || 28.1, 22.6
-		warnDeafeningRoarSoon:Schedule(15)
-		timerNextLunaticGaze:Start(12) -- S3 VOD review
+		timerNextDeafeningRoar:Start(30) -- 30s AC
+		warnDeafeningRoarSoon:Schedule(25)
+		timerNextLunaticGaze:Start(7) -- 7s AC
 	end
 end

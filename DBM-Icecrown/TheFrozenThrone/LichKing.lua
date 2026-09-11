@@ -4,8 +4,9 @@ local L		= mod:GetLocalizedStrings()
 local UnitGUID, UnitName, GetSpellInfo = UnitGUID, UnitName, GetSpellInfo
 local UnitInRange, UnitIsUnit, UnitInVehicle, IsInRaid = UnitInRange, UnitIsUnit, UnitInVehicle, DBM.IsInRaid
 
-mod:SetRevision("20260902000000")
+mod:SetRevision("20260909000000")
 mod:SetCreatureID(36597)
+mod:SetEncounterID(856)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6, 7)
 mod:SetHotfixNoticeRev(20240220000000)
 mod:SetMinSyncRevision(20220921000000)
@@ -17,14 +18,14 @@ mod:RegisterEvents(
 )
 
 mod:RegisterEventsInCombat(
-
+	"CHAT_MSG_RAID_BOSS_EMOTE",
 	"SPELL_CAST_START",
 	"SPELL_CAST_SUCCESS",
 	"SPELL_DISPEL",
 	"SPELL_AURA_APPLIED 28747 72754 73708 73709 73710 73650",
 	"SPELL_AURA_APPLIED_DOSE 70338 73785 73786 73787",
 
-	"SPELL_SUMMON 69037 70372",
+	"SPELL_SUMMON",
 	"SPELL_DAMAGE 68983 73791 73792 73793",
 	"SPELL_MISSED 68983 73791 73792 73793",
 	"UNIT_HEALTH target focus",
@@ -143,7 +144,7 @@ local specWarnIceSpheresYou			= mod:NewSpecialWarningMoveAway(69103, nil, 69090,
 local specWarnGTFO					= mod:NewSpecialWarningGTFO(68983, nil, nil, nil, 1, 8)
 
 local timerPhaseTransition			= mod:NewTimer(62.5, "PhaseTransition", 72262, nil, nil, 6)
-local timerRagingSpiritCD			= mod:NewNextCountTimer(20, 69200, nil, nil, nil, 1)
+local timerRagingSpiritCD			= mod:NewNextCountTimer(19, 69200, nil, nil, nil, 1)
 local timerHarvestSoulsCD			= mod:NewNextTimer(100, 73654, nil, nil, nil, 6, nil, DBM_COMMON_L.HEROIC_ICON)
 local timerSoulShriekCD				= mod:NewCDTimer(12, 69242, nil, nil, nil, 1)
 
@@ -172,6 +173,8 @@ local grabIcon = 2
 local warnedAchievement = false
 local lastPlague
 local defileCastTime = 0
+local ragingSpiritEmote = "^Raging Spirit is targeting (.-)!"
+local defileEmote = "^Defile is targeting (.-)!"
 
 local function RemoveImmunes(self)
 	if self.Options.RemoveImmunes then
@@ -181,6 +184,8 @@ local function RemoveImmunes(self)
 		CancelUnitBuff("player", (GetSpellInfo(19752)))
 	end
 end
+
+local bossCastStart, valkyrWave, syncDefileValkyr, trapTick, valkyrTick, startTrapTimer, startValkyrTimer
 
 local function NextPhase(self, delay)
 	self.vb.infestCount = 0
@@ -193,7 +198,7 @@ local function NextPhase(self, delay)
 		timerShamblingHorror:Start(15-delay)
 		timerDrudgeGhouls:Start(10-delay)
 		if self:IsHeroic() then
-			timerTrapCD:Start(-delay)
+			startTrapTimer(self, 15.5-delay)
 		end
 		timerNecroticPlagueCD:Start(-delay)
 		timerInfestCD:Start(5.0-delay, self.vb.infestCount+1)
@@ -202,13 +207,14 @@ local function NextPhase(self, delay)
 		warnPhase2:Play("ptwo")
 		timerNecroticPlagueCD:Cancel()
 		timerTrapCD:Cancel()
+		self:Unschedule(trapTick)
 		timerShamblingHorror:Cancel()
 		timerDrudgeGhouls:Cancel()
 		warnShamblingSoon:Cancel()
 		if self.Options.ShowFrame then
 			self:CreateFrame()
 		end
-		timerSummonValkyr:Start(20, self.vb.valkyrWaveCount+1)
+		startValkyrTimer(self, 20)
 		timerSoulreaperCD:Start(40, self.vb.soulReaperCount+1)
 		soundSoulReaperSoon:Schedule(40-2.5, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\soulreaperSoon.mp3")
 		timerDefileCD:Start(38, self.vb.defileCount+1)
@@ -238,7 +244,6 @@ local function NextPhase(self, delay)
 	end
 end
 
-local bossCastStart, valkyrWave
 local bossCastNames = {}
 local function isLichKing(self, guid)
 	return guid and self:GetCIDFromGUID(guid) == 36597
@@ -252,6 +257,54 @@ end
 
 local function RestoreWipeTime(self)
 	self:SetWipeTime(5)
+end
+
+local function retimeDefile(self, t)
+	timerDefileCD:Start(t, self.vb.defileCount+1)
+	warnDefileSoon:Cancel()
+	warnDefileSoon:CancelVoice()
+	if t > 5.5 then
+		warnDefileSoon:Schedule(t-5.5, self.vb.defileCount+1)
+		warnDefileSoon:ScheduleVoice(t-5.5, "scatter")
+	end
+end
+
+startTrapTimer = function(self, t)
+	self:Unschedule(trapTick)
+	timerTrapCD:Start(t)
+	self:Schedule(t, trapTick, self)
+end
+
+trapTick = function(self)
+	startTrapTimer(self, 15.5)
+end
+
+startValkyrTimer = function(self, t)
+	self:Unschedule(valkyrTick)
+	timerSummonValkyr:Cancel()
+	timerSummonValkyr:Start(t, self.vb.valkyrWaveCount+1)
+	self:Schedule(t, valkyrTick, self)
+end
+
+valkyrTick = function(self)
+	startValkyrTimer(self, 45)
+end
+
+syncDefileValkyr = function(self)
+	if self.vb.phase ~= 2 then return end
+	local minTime = self:IsDifficulty("normal25", "heroic25") and 5 or 4
+	local d = timerDefileCD:GetRemaining(self.vb.defileCount+1)
+	local v = timerSummonValkyr:GetRemaining(self.vb.valkyrWaveCount+1)
+	if v <= 0 then return end
+	if d <= 0 then return end
+	local gap = v - d
+	if gap >= 0 and gap < 3.5 then
+		retimeDefile(self, v + minTime)
+	elseif gap >= 3.5 and gap < 5 then
+		startValkyrTimer(self, d + 5)
+	elseif gap < 0 and -gap < minTime then
+		retimeDefile(self, v + minTime)
+	end
 end
 
 function mod:OnCombatStart(delay)
@@ -269,6 +322,8 @@ function mod:OnCombatStart(delay)
 end
 
 function mod:OnCombatEnd()
+	self:Unschedule(trapTick)
+	self:Unschedule(valkyrTick)
 	self:UnregisterShortTermEvents()
 	self:DestroyFrame()
 	if self.Options.RangeFrame then
@@ -298,6 +353,30 @@ function mod:DefileTarget(targetname, uId)
 				x, y = GetPlayerMapPosition(uId)
 			end
 		DBM.Arrow:ShowRunAway(x, y, 10, 5)
+	end
+end
+
+function mod:RagingSpiritTarget(name)
+	if not name or not self:AntiSpam(3, "ragingspirit") then return end
+	self.vb.ragingSpiritCount = self.vb.ragingSpiritCount + 1
+	timerSoulShriekCD:Start(20, name)
+	if name == UnitName("player") then
+		specWarnRagingSpirit:Show()
+		specWarnRagingSpirit:Play("targetyou")
+	else
+		warnRagingSpirit:Show(name)
+	end
+	local maxSpirits, interval = 3, 19
+	if self.vb.phase == 2.5 then
+		maxSpirits, interval = 4, 14
+	end
+	if self.vb.ragingSpiritCount < maxSpirits then
+		timerRagingSpiritCD:Start(interval, self.vb.ragingSpiritCount+1)
+	else
+		timerRagingSpiritCD:Cancel()
+	end
+	if self.Options.RagingSpiritIcon then
+		self:SetIcon(name, 6, 5)
 	end
 end
 
@@ -444,20 +523,7 @@ function mod:SPELL_CAST_SUCCESS(args)
 			specWarnSoulreaperOtr:Play("tauntboss")
 		end
 	elseif spellId == 69200 then
-		self.vb.ragingSpiritCount = self.vb.ragingSpiritCount + 1
-		timerSoulShriekCD:Start(20, args.destName)
-		if args:IsPlayer() then
-			specWarnRagingSpirit:Show()
-			specWarnRagingSpirit:Play("targetyou")
-		else
-			warnRagingSpirit:Show(args.destName)
-		end
-		if self.vb.ragingSpiritCount <= 3 then
-			timerRagingSpiritCD:Start(nil, self.vb.ragingSpiritCount)
-		end
-		if self.Options.RagingSpiritIcon then
-			self:SetIcon(args.destName, 6, 5)
-		end
+		self:RagingSpiritTarget(args.destName)
 	elseif spellId == 72762 and args.destName and isLichKing(self, args.sourceGUID) then
 		self:DefileTarget(args.destName, DBM:GetRaidUnitId(args.destName))
 	elseif spellId == 73539 and args.destName and isLichKing(self, args.sourceGUID) then
@@ -528,6 +594,8 @@ function mod:SPELL_SUMMON(args)
 		timerShamblingHorror:Start()
 		timerEnrageCD:Start(11, shamblingCount, args.destGUID)
 		timerEnrageCD:Schedule(14, nil, shamblingCount, args.destGUID)
+	elseif args.destGUID and self:GetCIDFromGUID(args.destGUID) == 36701 then
+		self:RagingSpiritTarget(args.sourceName)
 	end
 end
 
@@ -566,6 +634,21 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 		bossCastStart(self, GetSpellInfo(68981))
 	elseif msg == L.YellQuake or msg:find(L.YellQuake, 1, true) then
 		bossCastStart(self, GetSpellInfo(72262))
+	end
+end
+
+function mod:CHAT_MSG_RAID_BOSS_EMOTE(msg)
+	if not msg then return end
+	local name = msg:match(ragingSpiritEmote)
+	if name then
+		self:RagingSpiritTarget(name)
+		return
+	end
+	name = msg:match(defileEmote)
+	if name then
+		bossCastStart(self, GetSpellInfo(72762))
+		self:Unschedule(scanBossTarget)
+		self:DefileTarget(name, DBM:GetRaidUnitId(name))
 	end
 end
 
@@ -620,18 +703,20 @@ bossCastStart = function(self, spellName)
 	if spellName == GetSpellInfo(68981) then
 		if self.vb.phase ~= math.floor(self.vb.phase) then return end
 		self:SetStage(self.vb.phase + 0.5)
-		self.vb.ragingSpiritCount = 1
+		self.vb.ragingSpiritCount = 0
 		warnRemorselessWinter:Show()
 		timerPhaseTransition:Start()
-		timerRagingSpiritCD:Start(4, self.vb.ragingSpiritCount)
+		timerRagingSpiritCD:Start(4, 1)
 		warnShamblingSoon:Cancel()
 		timerShamblingHorror:Cancel()
 		timerDrudgeGhouls:Cancel()
 		timerSummonValkyr:Cancel()
+		self:Unschedule(valkyrTick)
 		timerInfestCD:Cancel()
 		soundInfestSoon:Cancel()
 		timerNecroticPlagueCD:Cancel()
 		timerTrapCD:Cancel()
+		self:Unschedule(trapTick)
 		timerHarvestSoulCD:Cancel()
 		timerHarvestSoulsCD:Cancel()
 		timerDefileCD:Cancel()
@@ -681,10 +766,17 @@ bossCastStart = function(self, spellName)
 		warnDefileSoon:Schedule(27, self.vb.defileCount+1)
 		warnDefileSoon:ScheduleVoice(27, "scatter")
 		timerDefileCD:Start(nil, self.vb.defileCount+1)
+		if self.vb.phase == 2 then
+			local v = timerSummonValkyr:GetRemaining(self.vb.valkyrWaveCount+1)
+			if v > 0 and v < 5 then
+				startValkyrTimer(self, 5)
+			end
+		end
+		syncDefileValkyr(self)
 	elseif spellName == GetSpellInfo(73539) then
 		self:Unschedule(scanBossTarget)
 		scanBossTarget(self, "TrapTarget", 10)
-		timerTrapCD:Start()
+		startTrapTimer(self, 15.5)
 	elseif spellName == GetSpellInfo(73654) then
 		specWarnHarvestSouls:Show()
 		timerHarvestSoulsCD:Start()
@@ -726,11 +818,13 @@ valkyrWave = function(self)
 	self.vb.valkIcon = 2
 	self.vb.valkyrWaveCount = self.vb.valkyrWaveCount + 1
 	warnSummonValkyr:Show(self.vb.valkyrWaveCount)
-	timerSummonValkyr:Start(nil, self.vb.valkyrWaveCount+1)
+	startValkyrTimer(self, 45)
 	if self.vb.phase == 2 then
 		local minTime = self:IsDifficulty("normal25", "heroic25") and 5 or 4
 		if timerDefileCD:GetRemaining(self.vb.defileCount+1) < minTime then
-			timerDefileCD:Start(minTime, self.vb.defileCount+1)
+			retimeDefile(self, minTime)
+		else
+			syncDefileValkyr(self)
 		end
 	end
 end

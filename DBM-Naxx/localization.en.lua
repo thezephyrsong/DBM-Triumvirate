@@ -65,9 +65,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	ArachnophobiaTimer	= "Arachnophobia"
+	ArachnophobiaTimer	= "Arachnophobia",
+	EmoteWebWrap		= "spins her web into a cocoon",
+	EmoteWebSpray		= "sprays strands of web everywhere"
 })
-
 ------------------------------
 --  Noth the Plaguebringer  --
 ------------------------------
@@ -84,7 +85,8 @@ L:SetWarningLocalization({
 
 L:SetTimerLocalization({
 	TimerTeleport		= "Teleport",
-	TimerTeleportBack	= "Teleport back"
+	TimerTeleportBack	= "Teleport back",
+	TimerAdds			= "Incoming Adds"
 })
 
 L:SetOptionLocalization({
@@ -95,9 +97,12 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull				= "Die, trespasser!",
-	Adds				= "summons forth Skeletal Warriors!",
-	AddsTwo				= "raises more skeletons!"
+	Pull			= "Die, trespasser!",
+	Adds			= "summons forth Skeletal Warriors!",
+	AddsTwo			= "raises more skeletons!",
+	Blink			= "blinks away!",
+	TeleportBalcony	= "teleports to the balcony above!",
+	TeleportBack	= "teleports back into the battle!"
 })
 
 --------------------------
@@ -259,12 +264,14 @@ L:SetWarningLocalization({
 	WarningWaveSpawned	= "Wave %d: %s spawned",
 	WarningRiderDown	= "Rider down",
 	WarningKnightDown	= "Knight down",
-	WarningPhase2		= "Phase 2"
+	WarningPhase2		= "Phase 2",
+	SpecWarnGothLow		= "Gothik can't teleport anymore"
 })
 
 L:SetTimerLocalization({
 	TimerWave	= "Wave %d",
-	TimerPhase2	= "Phase 2"
+	TimerPhase2	= "Phase 2",
+	TimerTeleport = "Teleport",
 })
 
 L:SetOptionLocalization({
@@ -273,7 +280,9 @@ L:SetOptionLocalization({
 	WarningWaveSoon		= "Show pre-warning for wave",
 	WarningWaveSpawned	= "Show warning for wave spawned",
 	WarningRiderDown	= "Show warning when an Unrelenting Rider dies",
-	WarningKnightDown	= "Show warning when an Unrelenting Death Knight dies"
+	WarningKnightDown	= "Show warning when an Unrelenting Death Knight dies",
+	SpecWarnGothLow		= "Special Warning when Gothik can't teleport anymore in P2",
+	TimerTeleport 		= "Show timer for Gothik teleport",
 })
 
 L:SetMiscLocalization({
@@ -283,7 +292,9 @@ L:SetMiscLocalization({
 	WarningWave3	= "%d %s, %d %s and %d %s",
 	Trainee			= "Trainees",
 	Knight			= "Knights",
-	Rider			= "Riders"
+	Rider			= "Riders",
+	GothikDoorEmote	= "The central gate opens!", -- 32307
+	GothikPhase2Yell= "I have waited long enough. Now you face the harvester of souls." -- 13028
 })
 
 ---------------------
@@ -359,7 +370,8 @@ L:SetGeneralLocalization({
 
 L:SetWarningLocalization({
 	specwarnP2Soon	= "Kel'Thuzad engages in 10 Seconds",
-	warnAddsSoon	= "Guardians of Icecrown incoming soon"
+	warnAddsSoon	= "Guardians of Icecrown incoming soon",
+	WeaponsStatus	= "Auto Unequip/Equip weapons: %s (%s - %s)"
 })
 
 L:SetTimerLocalization({
@@ -370,20 +382,30 @@ L:SetOptionLocalization({
 	TimerPhase2			= "Show timer for Phase 2",
 	specwarnP2Soon		= "Show special warning 10 seconds before Kel'Thuzad engages",
 	warnAddsSoon		= "Show pre-warning for Guardians of Icecrown",
-	EqUneqWeaponsKT		= "Automatically unequip and equip weapons before and after $spell:28410. Requires a COMPLETE (with the weapons of choice that will be equipped) equipment set named \"pve\"",
-	EqUneqWeaponsKT2	= "Automatically unequip and equip weapons when $spell:28410 is cast on YOU",
+	WeaponsStatus		= "Show special warning at combat start if unequip/equip function is enabled",
+	EqUneqWeaponsKT		= "Automatically unequip and equip weapons on a timer, before and after $spell:28410. Requires a COMPLETE (with the weapons of choice that will be equipped) equipment set named \"pve\"",
+	EqUneqWeaponsKT2	= "Automatically unequip and equip weapons when $spell:28410 is cast on YOU. Requires a COMPLETE (with the weapons of choice that will be equipped) equipment set named \"pve\"",
 	RemoveBuffsOnMC		= "Remove buffs when $spell:28410 is cast on you. Each option is cumulative.",
 	Never				= NEVER, -- don't translate,
 	Gift				= "Remove $spell:48469 / $spell:48470. Minimal approach to prevent $spell:33786 resists.",
 	CCFree				= "+ Remove $spell:48169 / $spell:48170. Account for resists of spells in the Shadow school.",
 	ShortOffensiveProcs	= "+ Remove offensive procs that have a low duration. Recommended for raid safety without compromising raid damage output.",
-	MostOffensiveBuffs	= "+ Remove most offensive buffs (mainly for Casters and |cFFFF7C0AFeral Druids|r). Maximum raid safety with loss of damage output and need to self-rebuff/shapeshift!"
+	MostOffensiveBuffs	= "+ Remove most offensive buffs (mainly for Casters and |cFFFF7C0AFeral Druids|r). Maximum raid safety with loss of damage output and need to self-rebuff/shapeshift!",
+	EqUneqFilter		= FILTER, -- don't translate
+	OnlyDPS				= DBM_COMMON_L.DAMAGE_ICON, -- don't translate
+	DPSTank				= DBM_COMMON_L.DAMAGE_ICON..DBM_COMMON_L.TANK_ICON, -- don't translate
+	NoFilter			= DBM_COMMON_L.DAMAGE_ICON..DBM_COMMON_L.TANK_ICON..DBM_COMMON_L.HEALER_ICON -- don't translate
 })
 
 L:SetMiscLocalization({
 	Yell		= "Minions, servants, soldiers of the cold dark! Obey the call of Kel'Thuzad!",
 --	YellMC1		= "Your soul is bound to me, now!",
 --	YellMC2		= "There will be no escape!",
+	Yell1Phase2	= "Pray for mercy!", -- 12995
+	Yell2Phase2	= "Scream your dying breath!", -- 12996
+	Yell3Phase2	= "The end is upon you!", -- 12997
+	YellPhase3	= "Master, I require aid!", -- 12998
+	YellGuardians	= "Very well. Warriors of the frozen wastes, rise up! I command you to fight, kill and die for your master! Let none survive!", -- 12994
 	setMissing	= "ATTENTION! DBM automatic weapon unequipping/equipping will not work until you create a equipment set named pve",
 	EqUneqLineDescription	= "Automatic Equip/Unequip"
 })

@@ -45,6 +45,7 @@
 ----------------
 --  MapSizes  --
 ----------------
+-- Based on the [MPQ Patch] Classic/BC Dungeon Maps for WotLK, by Trimitor
 DBM:RegisterMapSize("AhnQiraj",				-- Ahn'Qiraj 40 (Raid-Classic)
 	1, 2777.544113162, 1851.6962890599989,
 	2, 977.55993651999984, 651.70654296999965,
@@ -156,7 +157,7 @@ DBM:RegisterMapSize("Dustwallow",			0, 5250.000061035, 3499.99975586)
 DBM:RegisterMapSize("EasternPlaguelands",	0, 4031.25, 2687.49987793)
 DBM:RegisterMapSize("Elwynn",				0, 3470.83325196, 2314.58300779)
 DBM:RegisterMapSize("EversongWoods" ,		0, 4925, 3283.33300779)
-DBM:RegisterMapSize("Expansion01",			0, 17464.078125, 11642.71875) -- Old client Zangarmarsh BC dungeons. HD client fixes mapInfo
+DBM:RegisterMapSize("Expansion01",			0, 17464.078125, 11642.71875) -- Old client Zangarmarsh BC dungeons. [MPQ Patch] "Classic/BC Dungeon Maps for WotLK" fixes mapInfo
 DBM:RegisterMapSize("Felwood",				0, 5749.9996337899993, 3833.33325195)
 DBM:RegisterMapSize("Feralas",				0, 6949.99975586, 4633.33300781)
 DBM:RegisterMapSize("Ghostlands",			0, 3300.0000000000009, 2199.9995117200006)
@@ -230,7 +231,7 @@ DBM:RegisterMapSize("MagistersTerrace",	-- Magister's Terrace (Party-BC)
 DBM:RegisterMapSize("MagtheridonsLair",	-- Magtheridon's Lair (Raid-BC)
 	1, 556, 370.666694641
 )
-DBM:RegisterMapSize("Mana-Tombs",		-- Mana-Tombs (Party-BC)
+DBM:RegisterMapSize("ManaTombs",		-- Mana-Tombs (Party-BC)
 	1, 823.28515625, 548.85681152329994
 )
 DBM:RegisterMapSize("Maraudon",			-- Maraudon (Party-Classic)
@@ -1221,6 +1222,7 @@ function rangeCheck:Show(range, filter, forceshow, redCircleNumPlayers, reverse,
 	if not radarFrame then
 		createRadarFrame()
 	end
+	mainFrame.previouslyShown = self:IsShown()
 	local restrictionsActive = DBM:HasMapRestrictions()
 	if (DBM.Options.RangeFrameFrames == "text" or DBM.Options.RangeFrameFrames == "both" or restrictionsActive) and not textFrame:IsShown() then
 		DBM:Debug("Range TEXT frame shown", 3)
@@ -1239,7 +1241,6 @@ function rangeCheck:Show(range, filter, forceshow, redCircleNumPlayers, reverse,
 	mainFrame.hideTime = hideTime and (GetTime() + hideTime) or 0
 	mainFrame.restrictions = restrictionsActive
 	mainFrame.onlySummary = onlySummary
-	mainFrame.previouslyShown = true
 	mainFrame.bossUnit = bossUnit
 	mainFrame.bossMode = bossUnit ~= nil
 	if not mainFrame.eventRegistered then
@@ -1271,7 +1272,7 @@ function rangeCheck:DisableBossMode()
 		mainFrame.range = mainFrame.previousRange
 		restoreRange = mainFrame.range
 		if not mainFrame.previouslyShown then
-			self:Hide()
+			self:Hide(true)
 		end
 	end
 end

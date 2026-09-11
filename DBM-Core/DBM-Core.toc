@@ -16,9 +16,9 @@
 ## SavedVariablesPerCharacter: DBM_UsedProfile, DBM_UseDualProfile, DBM_CharSavedRevision, DBM_SavedOptions
 ## LoadOnDemand: 0
 ## DefaultState: enabled
-## Author: bonkywonky, Barsoom, Bunny67, Zidras, DBM-Frostmourne contributors, original DBM team
-## Version: 10.2.4
-## X-Website: https://github.com/Zidras/DBM-Warmane/
+## Author: Yuna, bonkywonky, Barsoom, Bunny67, Zidras, DBM-Frostmourne contributors, original DBM team
+## Version: 10.2.3
+## X-Website: https://github.com/thezephyrsong/DBM-Triumvirate/
 
 compat.lua
 
@@ -84,6 +84,7 @@ DBM-BossHealth.lua
 DBM-BossHealth.xml
 DBM-TimerTracker.xml
 DBM-TimerTracker.lua
+DBM-BossBannerToast.lua
 
 # Modules
 modules\Commands.lua

@@ -4,19 +4,23 @@ local L		= mod:GetLocalizedStrings()
 mod:SetRevision("20260830000000")
 local addsIcon
 local bossID
+local enemyShipID
 mod:RegisterCombat("combat")
 if UnitFactionGroup("player") == "Alliance" then
 
 	mod:RegisterKill("yell", L.KillAlliance)
 	mod:SetCreatureID(36939, 37215)
+mod:SetEncounterID(847)--No ES fires this combat
 	addsIcon = 23334
 	bossID = 36939
+	enemyShipID = 37215
 else
 
 	mod:RegisterKill("yell", L.KillHorde)
 	mod:SetCreatureID(36948, 37540)
 	addsIcon = 23336
 	bossID = 36948
+	enemyShipID = 37540
 end
 mod:SetHotfixNoticeRev(20220921000000)
 mod:SetMinSyncRevision(20220921000000)
@@ -28,13 +32,14 @@ mod:RegisterEvents(
 mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED 71195 71193 71188 69652 69651 72306 69638 69705",
 	"SPELL_AURA_APPLIED_DOSE 72306 69638",
-	"SPELL_AURA_REMOVED 69705",
 	"SPELL_CAST_START 69705",
 	"UNIT_DIED",
+	"UNIT_HEALTH boss1 boss2",
 	"UNIT_SPELLCAST_SUCCEEDED boss1 boss2"
 )
 
 local warnBelowZero			= mod:NewSpellAnnounce(69705, 4)
+local warnMageSoon			= mod:NewSoonAnnounce(69705, 2)
 local warnExperienced		= mod:NewTargetNoFilterAnnounce(71188, 1, nil, false)
 local warnVeteran			= mod:NewTargetNoFilterAnnounce(71193, 2, nil, false)
 local warnElite				= mod:NewTargetNoFilterAnnounce(71195, 3, nil, false)
@@ -44,7 +49,7 @@ local warnWoundingStrike	= mod:NewTargetNoFilterAnnounce(69651, 2)
 local warnAddsSoon			= mod:NewAnnounce("WarnAddsSoon", 2, addsIcon)
 
 local timerCombatStart		= mod:NewCombatTimer(47.5)
-local timerBelowZeroCD		= mod:NewNextTimer(35, 69705, nil, nil, nil, 5, nil, DBM_COMMON_L.DAMAGE_ICON, nil, 1)
+local timerBelowZeroCD		= mod:NewNextTimer(30, 69705, nil, nil, nil, 5, nil, DBM_COMMON_L.DAMAGE_ICON, nil, 1)
 local timerBelowZeroCast	= mod:NewCastTimer(5, 69705, nil, nil, nil, 5)
 local timerBattleFuryActive	= mod:NewBuffActiveTimer(17, 69638, nil, "Tank|Healer", nil, 5, nil, DBM_COMMON_L.TANK_ICON)
 local timerAdds				= mod:NewTimer(60, "TimerAdds", addsIcon, nil, nil, 1)
@@ -56,6 +61,7 @@ local soundFreeze			= mod:NewSound(69705)
 mod:RemoveOption("HealthFrame")
 
 mod.vb.firstMage = false
+mod.vb.mageSoon = false
 
 local function Adds(self)
 
@@ -71,6 +77,7 @@ function mod:OnCombatStart(delay)
 	warnAddsSoon:Schedule(7-delay)
 
 	self.vb.firstMage = false
+	self.vb.mageSoon = false
 end
 
 function mod:SPELL_AURA_APPLIED(args)
@@ -103,16 +110,21 @@ function mod:SPELL_AURA_APPLIED_DOSE(args)
 	end
 end
 
-function mod:SPELL_AURA_REMOVED(args)
-	if args.spellId == 69705 and self:AntiSpam(5, 2) then
+function mod:UNIT_DIED(args)
+	local cid = self:GetCIDFromGUID(args.destGUID)
+	if cid == 37116 or cid == 37117 then
+		timerBelowZeroCast:Cancel()
 		timerBelowZeroCD:Start()
 	end
 end
 
-function mod:UNIT_DIED(args)
-	local cid = self:GetCIDFromGUID(args.destGUID)
-	if (cid == 37116 or cid == 37117) and timerBelowZeroCast:IsStarted() then
-		timerBelowZeroCast:Cancel()
+function mod:UNIT_HEALTH(uId)
+	if self.vb.firstMage or self.vb.mageSoon then return end
+	if self:GetUnitCreatureId(uId) ~= enemyShipID then return end
+	local hp = UnitHealth(uId) / UnitHealthMax(uId)
+	if hp <= 0.93 then
+		self.vb.mageSoon = true
+		warnMageSoon:Show()
 	end
 end
 

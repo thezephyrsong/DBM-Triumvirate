@@ -1,8 +1,9 @@
 local mod	= DBM:NewMod("Archavon", "DBM-VoA")
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20220924192907")
+mod:SetRevision("20250929220131")
 mod:SetCreatureID(31125)
+mod:SetEncounterID(772)
 
 mod:RegisterCombat("combat")
 
@@ -28,7 +29,7 @@ local timerArchavonEnrage	= mod:NewBerserkTimer(300, nil, "ArchavonEnrage")
 
 function mod:OnCombatStart(delay)
 	timerArchavonEnrage:Start()
-	timerNextStomp:Start(49.4-delay) -- REVIEW! variance? (10N Lordaeron 2022/09/23) - pull:49.4
+	timerNextStomp:Start(45-delay) -- REVIEW! variance? (10N Lordaeron 2022/09/23) - pull:49.4
 	warnStompSoon:Schedule(40-delay)
 end
 

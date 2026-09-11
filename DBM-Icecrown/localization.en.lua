@@ -101,6 +101,10 @@ L:SetMiscLocalization({
 	RunePower			= "Blood Power",
 	PullAlliance		= "For every Horde soldier that you killed -- for every Alliance dog that fell, the Lich King's armies grew. Even now the val'kyr work to raise your fallen as Scourge.",
 	PullHorde			= "Kor'kron, move out! Champions, watch your backs. The Scourge have been...",
+	IntroAllianceArrive	= "A lone orc against the might of the Alliance",
+	IntroAllianceCharge	= "Charge!!!",
+	IntroHordeArrive	= "My boy died at the Wrath Gate",
+	IntroHordeFinal		= "Pathetic old orc! Come then, heroes",
 	YellAggro			= "BY THE MIGHT OF THE LICH KING!"
 })
 

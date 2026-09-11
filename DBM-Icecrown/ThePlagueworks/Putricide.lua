@@ -3,16 +3,17 @@ local L		= mod:GetLocalizedStrings()
 
 local GetTime = GetTime
 
-mod:SetRevision("20260902100000")
+mod:SetRevision("20260911000000")
 mod:SetCreatureID(36678)
+mod:SetEncounterID(851)
 mod:SetUsedIcons(1, 2, 3, 4)
-mod:SetHotfixNoticeRev(20230823000000)
+mod:SetHotfixNoticeRev(20260911000000)
 mod:SetMinSyncRevision(20220908000000)
 
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 70351 71966 71967 71968 71617 72851 72852 71621 72850 70672 72455 72832 72833 73121 73122 73120 71893",
+	"SPELL_CAST_START 70351 71966 71967 71968 71617 72851 72852 71621 72850 70672 72455 72832 72833 73121 73122 73120 71893 71255",
 	"SPELL_CAST_SUCCESS 70341 71255 72855 72856 70911 72615 72295 74280 74281 70852 70351 71966 71967 71968",
 	"SPELL_AURA_APPLIED 70447 72836 72837 72838 70672 72455 72832 72833 72451 72463 72671 72672 70542 70539 72457 72875 72876 70352 74118 70353 74119 72855 72856 70911",
 	"SPELL_AURA_APPLIED_DOSE 72451 72463 72671 72672 70542",
@@ -45,7 +46,7 @@ local yellUnboundPlague				= mod:NewYellMe(70911, false)
 local timerGaseousBloat				= mod:NewTargetTimer(20, 70672, nil, nil, nil, 3)
 local timerGaseousBloatCast			= mod:NewCastTimer(3, 70672, nil, nil, nil, 3)
 local timerSlimePuddleCD			= mod:NewCDTimer(35, 70341, nil, nil, nil, 5, nil, DBM_COMMON_L.TANK_ICON)
-local timerUnstableExperimentCD		= mod:NewCDTimer(35, 70351, nil, nil, nil, 1, nil, DBM_COMMON_L.DEADLY_ICON, true)
+local timerUnstableExperimentCD		= mod:NewCDTimer("v35-40", 70351, nil, nil, nil, 1, nil, DBM_COMMON_L.DEADLY_ICON, true)
 local timerUnboundPlagueCD			= mod:NewNextTimer(90, 70911, nil, nil, nil, 3, nil, DBM_COMMON_L.HEROIC_ICON)
 local timerUnboundPlague			= mod:NewBuffActiveTimer(12, 70911, nil, nil, nil, 3)
 
@@ -63,7 +64,7 @@ local warnChokingGasBomb			= mod:NewSpellAnnounce(71255, 3, nil, "Melee")
 local specWarnChokingGasBomb		= mod:NewSpecialWarningMove(71255, "Melee", nil, nil, 1, 2)
 local specWarnMalleableGooCast		= mod:NewSpecialWarningSpell(72295, "Ranged", nil, nil, 2, 2)
 
-local timerChokingGasBombCD			= mod:NewCDTimer(35, 71255, nil, nil, nil, 3, nil, nil, true)
+local timerChokingGasBombCD			= mod:NewCDTimer("v35-40", 71255, nil, nil, nil, 3, nil, nil, true)
 local timerChokingGasBombExplosion	= mod:NewCastTimer(12, 71255, nil, nil, nil, 2)
 local timerMalleableGooCD			= mod:NewCDTimer(25, 72295, nil, nil, nil, 3)
 
@@ -91,6 +92,7 @@ local timerNextPhase				= mod:NewPhaseTimer(12.5)
 
 local redOozeGUIDsCasts = {}
 local unstableCastStart = 0
+local chokingCastStart = 0
 mod.vb.warned_preP2 = false
 mod.vb.warned_preP3 = false
 
@@ -111,10 +113,11 @@ function mod:OnCombatStart(delay)
 	self:SetStage(1)
 	berserkTimer:Start(-delay)
 	timerSlimePuddleCD:Start(10-delay)
-	timerUnstableExperimentCD:Start(30-delay)
+	timerUnstableExperimentCD:Start(("v%s-%s"):format(30-delay, 35-delay))
 	warnUnstableExperimentSoon:Schedule(25-delay)
 	table.wipe(redOozeGUIDsCasts)
 	unstableCastStart = 0
+	chokingCastStart = 0
 	self.vb.warned_preP2 = false
 	self.vb.warned_preP3 = false
 	if self:IsHeroic() then
@@ -127,9 +130,29 @@ function mod:OnCombatEnd()
 end
 
 local function extendTimer(timer, delay)
-	if timer:IsStarted() then
+	local bar = DBT:GetBar(timer.id)
+	if not bar then return 0 end
+	local variance = bar.hasVariance and bar.varianceDuration or 0
+	if variance <= 0 then
+		local remaining = bar.timer
 		timer:AddTime(delay)
+		return remaining + delay
 	end
+	local maxLeft = DBT.Options.VarianceEnabled and bar.timer or bar.timer + variance
+	local minLeft = maxLeft - variance
+	timer:Start(("v%.1f-%.1f"):format(minLeft + delay, maxLeft + delay))
+	return minLeft + delay
+end
+
+local function ChokingGasBomb(self)
+	warnChokingGasBomb:Show()
+	specWarnChokingGasBomb:Show()
+	soundSpecWarnChokingGasBomb:Play("Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking.mp3")
+	soundChokingGasSoon:Cancel()
+	soundChokingGasSoon:Schedule(35-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
+	timerChokingGasBombCD:Start()
+	warnChokingGasBombSoon:Cancel()
+	warnChokingGasBombSoon:Schedule(30)
 end
 
 local function StartTransition(self)
@@ -147,26 +170,23 @@ local function StartTransition(self)
 	if toPhase3 then
 		timerUnstableExperimentCD:Cancel()
 		timerMutatedPlagueCD:Start(10)
-		extendTimer(timerMalleableGooCD, delay)
-		extendTimer(timerChokingGasBombCD, delay)
-		local gooRemaining = timerMalleableGooCD:GetRemaining()
+		local gooRemaining = extendTimer(timerMalleableGooCD, delay)
+		local chokingRemaining = extendTimer(timerChokingGasBombCD, delay)
 		if gooRemaining > 3 then
 			soundMalleableGooSoon:Schedule(gooRemaining-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\malleable_soon.mp3")
 		end
-		local chokingRemaining = timerChokingGasBombCD:GetRemaining()
 		if chokingRemaining > 5 then
 			soundChokingGasSoon:Schedule(chokingRemaining-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
 			warnChokingGasBombSoon:Schedule(chokingRemaining-5)
 		end
 	else
-		extendTimer(timerUnstableExperimentCD, delay)
-		local unstableRemaining = timerUnstableExperimentCD:GetRemaining()
+		local unstableRemaining = extendTimer(timerUnstableExperimentCD, delay)
 		if unstableRemaining > 5 then
 			warnUnstableExperimentSoon:Schedule(unstableRemaining-5)
 		end
 		timerMalleableGooCD:Start(25+heroicDelay)
 		soundMalleableGooSoon:Schedule(25+heroicDelay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\malleable_soon.mp3")
-		timerChokingGasBombCD:Start(35+heroicDelay)
+		timerChokingGasBombCD:Start(("v%s-%s"):format(35+heroicDelay, 40+heroicDelay))
 		soundChokingGasSoon:Schedule(35+heroicDelay-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
 		warnChokingGasBombSoon:Schedule(35+heroicDelay-5)
 	end
@@ -209,6 +229,9 @@ function mod:SPELL_CAST_START(args)
 			specWarnGaseousBloatCast:Show()
 			specWarnGaseousBloatCast:Play("targetchange")
 		end
+	elseif spellId == 71255 then
+		chokingCastStart = GetTime()
+		ChokingGasBomb(self)
 	elseif args:IsSpellID(73121, 73122, 73120, 71893) then
 		timerNextPhase:Start(12.5)
 		if self:IsHeroic() then
@@ -227,14 +250,10 @@ function mod:SPELL_CAST_SUCCESS(args)
 		soundSlimePuddle:Play("Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\puddle_cast.mp3")
 		timerSlimePuddleCD:Start()
 	elseif spellId == 71255 then
-		warnChokingGasBomb:Show()
-		specWarnChokingGasBomb:Show()
-		soundSpecWarnChokingGasBomb:Play("Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking.mp3")
-		soundChokingGasSoon:Cancel()
-		soundChokingGasSoon:Schedule(35-3, "Interface\\AddOns\\DBM-Core\\sounds\\RaidAbilities\\choking_soon.mp3")
-		timerChokingGasBombCD:Start()
 		timerChokingGasBombExplosion:Start()
-		warnChokingGasBombSoon:Schedule(30)
+		if GetTime() - chokingCastStart > 5 then
+			ChokingGasBomb(self)
+		end
 	elseif args:IsSpellID(72855, 72856, 70911) then
 		timerUnboundPlagueCD:Start()
 	elseif args:IsSpellID(72615, 72295, 74280, 74281) or spellId == 70852 then

@@ -4,8 +4,9 @@ local L		= mod:GetLocalizedStrings()
 local CancelUnitBuff, GetSpellInfo = CancelUnitBuff, GetSpellInfo
 local UnitGUID = UnitGUID
 
-mod:SetRevision("20260830100000")
+mod:SetRevision("20260910000000")
 mod:SetCreatureID(36855)
+mod:SetEncounterID(846)
 mod:SetUsedIcons(1, 2, 3, 7, 8)
 mod:SetMinSyncRevision(20220905000000)
 
@@ -237,10 +238,16 @@ local function RemoveBuffs(option)
 	DBM:Debug("Buffs removed, using option \"" .. option .. "\" and degree: " .. tostring(degreeOption), 2)
 end
 
+local function restartDominateMindCD(self)
+	timerDominateMindCD:Restart()
+	self:Unschedule(UnW)
+	if checkWeaponRemovalSetting(self) and self.Options.EqUneqTimer then
+		self:Schedule(39.5, UnW, self)
+	end
+end
+
 local function showDominateMindWarning(self)
 	warnDominateMind:Show(table.concat(dominateMindTargets, "<, >"))
-	timerDominateMind:Start()
-	timerDominateMindCD:Restart()
 	if checkWeaponRemovalSetting(self) then
 		if not tContains(dominateMindTargets, UnitName("player")) then
 			DBM:Debug("Equipping scheduled")
@@ -250,9 +257,6 @@ local function showDominateMindWarning(self)
 			self:Schedule(5.5, EqW, self)
 			self:Schedule(7.5, EqW, self)
 			self:Schedule(9.9, EqW, self)
-		end
-		if self.Options.EqUneqTimer then
-			self:Schedule(39, UnW, self)
 		end
 	end
 	table.wipe(dominateMindTargets)
@@ -333,7 +337,7 @@ function mod:OnCombatStart(delay)
 		end
 	end
 	table.wipe(dominateMindTargets)
-	self.vb.dominateMindIcon = 6
+	self.vb.dominateMindIcon = 1
 	playerHadTarget = false
 	if self.Options.InfoFrame then
 		DBM.InfoFrame:SetHeader(shieldName)
@@ -381,7 +385,9 @@ end
 function mod:SPELL_CAST_SUCCESS(args)
 	local spellId = args.spellId
 	if spellId == 71289 then
-		timerDominateMindCD:Restart()
+		if self:AntiSpam(5, 7) then
+			restartDominateMindCD(self)
+		end
 		DBM:Debug("MC on "..args.destName, 2)
 		if args.destName == UnitName("player") then
 			if self.Options.RemoveBuffsOnMC ~= "Never" then
@@ -414,12 +420,13 @@ function mod:SPELL_AURA_APPLIED(args)
 	local spellId = args.spellId
 	if spellId == 71289 then
 		dominateMindTargets[#dominateMindTargets + 1] = args.destName
+		timerDominateMind:Restart()
 		if self.Options.SetIconOnDominateMind then
 			self:SetIcon(args.destName, self.vb.dominateMindIcon, 12)
 		end
 		self.vb.dominateMindIcon = self.vb.dominateMindIcon + 1
 		self:Unschedule(showDominateMindWarning)
-		if self:IsDifficulty("heroic10", "normal25") or (self:IsDifficulty("heroic25") and #dominateMindTargets >= 3) then
+		if self:IsDifficulty("heroic10") or #dominateMindTargets >= 3 then
 			showDominateMindWarning(self)
 		else
 			self:Schedule(0.9, showDominateMindWarning, self)
@@ -499,7 +506,9 @@ function mod:CHAT_MSG_MONSTER_YELL(msg)
 	if msg == L.YellReanimatedFanatic or msg:find(L.YellReanimatedFanatic) then
 		warnReanimating:Show()
 	elseif msg == L.YellDominateMind or msg:find(L.YellDominateMind, 1, true) then
-		timerDominateMindCD:Restart()
+		if self:AntiSpam(5, 7) then
+			restartDominateMindCD(self)
+		end
 	end
 end
 

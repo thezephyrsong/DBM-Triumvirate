@@ -394,7 +394,7 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	Pull	= "Now keep an eye out! I'll have this licked in two shakes of a--",
 	Phase1	= "Security breach in progress. Analysis of historical archives transferred to lower-priority queue. Countermeasures engaged.",
-	Phase2	= "Threat index threshold exceeded.  Celestial archive aborted. Security level heightened.",
+	Phase2	= "Threat index threshold exceeded. Celestial archive aborted. Security level heightened.",
 	Phase3	= "Critical threat index. Void analysis diverted. Initiating sanitization protocol.",
 	Kill	= "Alert: security fail-safes deactivated. Beginning memory purge and... "
 })
@@ -569,7 +569,6 @@ L = DBM:GetModLocalization("SkadiTheRuthless")
 L:SetGeneralLocalization({
 	name = "Skadi the Ruthless"
 })
-
 L:SetMiscLocalization({
 	CombatStart		= "What mongrels dare intrude here? Look alive, my brothers!  A feast for the one that brings me their heads!",
 	Phase2			= "You motherless knaves! Your corpses will make fine morsels for my new drake!"
@@ -897,7 +896,7 @@ L:SetGeneralLocalization({
 L = DBM:GetModLocalization("LichKingEvent")
 
 L:SetGeneralLocalization({
-	name = "Lich King event"
+	name = "Escape from Arthas"
 })
 
 L:SetWarningLocalization({
@@ -913,6 +912,7 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
+	ArthasYellKill	= "FIRE! FIRE!",
 	Ghoul			= "Raging Ghoul",			--creature id 36940. Not sure how to use these in function above to simplify locals though. :\
 	Abom			= "Lumbering Abomination",	--creature id 37069
 	WitchDoctor		= "Risen Witch Doctor",		--creature id 36941
